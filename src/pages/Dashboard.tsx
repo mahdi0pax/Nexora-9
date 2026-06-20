@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion, type Variants } from 'framer-motion';
 import {
   Zap, Flame, Trophy, Crown, Sparkles, Star, TrendingUp, Target,
   Calendar, ChevronRight, Sword, ShoppingBag, Shield, Lock, Award,
@@ -7,8 +7,8 @@ import {
   Bitcoin, BarChart3, CheckCircle2, User,
 } from 'lucide-react';
 import { CATEGORIES, RANK_TIERS } from '../design-system/tokens';
-import { Player, CategoryMastery, ChallengeSession, Achievement, InventoryItem } from '../lib/supabase';
-import { GameState } from '../store/useGameStore';
+import type { Player, ChallengeSession, Achievement } from '../lib/supabase';
+import type { GameState } from '../store/useGameStore';
 
 interface DashboardProps {
   state: GameState;
@@ -73,9 +73,9 @@ function RankBadge({ tier, size = 'md' }: { tier: string; size?: 'sm' | 'md' }) 
   );
 }
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.45, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] } }),
+  visible: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.45, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] as const } }),
 };
 
 function Card({ children, index = 0, className = '' }: { children: React.ReactNode; index?: number; className?: string }) {

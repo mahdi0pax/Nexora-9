@@ -213,14 +213,14 @@ export type RankTierId = typeof RANK_TIERS[number]['id'];
 
 // ── Category metadata ─────────────────────────────────────────────────────
 export const CATEGORIES = [
-  { id: 'science',     label: 'Science',       icon: '⚗️', color: '#00D4FF', unlockLevel: 1 },
-  { id: 'history',     label: 'History',       icon: '🏛️', color: '#CD7F32', unlockLevel: 1 },
-  { id: 'technology',  label: 'Technology',    icon: '💻', color: '#00C896', unlockLevel: 1 },
-  { id: 'mathematics', label: 'Mathematics',   icon: '∑',  color: '#7C5CFC', unlockLevel: 1 },
-  { id: 'literature',  label: 'Literature',    icon: '📚', color: '#9BB0CC', unlockLevel: 3 },
-  { id: 'geography',   label: 'Geography',     icon: '🌍', color: '#FFB84D', unlockLevel: 3 },
-  { id: 'logic',       label: 'Logic',         icon: '♟', color: '#8FCDDD', unlockLevel: 5 },
-  { id: 'crypto_web3', label: 'Crypto & Web3', icon: '⟠', color: '#B9F2FF', unlockLevel: 5 },
+  { id: 'science',     label: 'Science',       icon: '⚗️', color: '#00D4FF', unlockLevel: 1, desc: 'Physics, chemistry, biology, and the laws of nature.' },
+  { id: 'history',     label: 'History',       icon: '🏛️', color: '#CD7F32', unlockLevel: 1, desc: 'Civilizations, conflicts, and the arc of human events.' },
+  { id: 'technology',  label: 'Technology',    icon: '💻', color: '#00C896', unlockLevel: 1, desc: 'Computing, networks, software, and the digital frontier.' },
+  { id: 'mathematics', label: 'Mathematics',   icon: '∑',  color: '#7C5CFC', unlockLevel: 1, desc: 'Algebra, calculus, logic, and abstract reasoning.' },
+  { id: 'literature',  label: 'Literature',    icon: '📚', color: '#9BB0CC', unlockLevel: 3, desc: 'Great works, authors, and the craft of language.' },
+  { id: 'geography',   label: 'Geography',     icon: '🌍', color: '#FFB84D', unlockLevel: 3, desc: 'Nations, landscapes, and the shape of the world.' },
+  { id: 'logic',       label: 'Logic',         icon: '♟', color: '#8FCDDD', unlockLevel: 5, desc: 'Pure reasoning, puzzles, and formal deduction.' },
+  { id: 'crypto_web3', label: 'Crypto & Web3', icon: '⟠', color: '#B9F2FF', unlockLevel: 5, desc: 'Blockchains, smart contracts, and decentralized systems.' },
 ] as const;
 
 export type CategoryId = typeof CATEGORIES[number]['id'];

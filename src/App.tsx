@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { useGameStore } from './store/useGameStore';
 import AppShell from './components/AppShell';
 import Landing from './pages/Landing';
@@ -14,8 +13,6 @@ import AchievementsPage from './pages/AchievementsPage';
 import SettingsPage from './pages/SettingsPage';
 
 type AppScreen = 'dashboard' | 'category_select' | 'challenge_start' | 'playing' | 'complete' | 'leaderboard' | 'shop' | 'profile' | 'achievements' | 'settings';
-
-const SCREEN_NAV: Record<AppScreen, () => void> = {} as Record<AppScreen, () => void>;
 
 export default function App() {
   const {

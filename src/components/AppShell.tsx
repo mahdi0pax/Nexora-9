@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Trophy, ShoppingBag, User, Award, Settings,
   ChevronRight, Menu, X, Zap, Flame, Crown, LogOut,
-  FlaskConical, Clock, Cpu, Calculator, BookOpen, Globe, Lightbulb, Bitcoin,
 } from 'lucide-react';
 import { NexoraMark, NexoraWordmark } from '../design-system/Logo';
 import { Player } from '../lib/supabase';

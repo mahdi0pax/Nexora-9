@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { CheckCircle2, Lock, Trophy, Zap, Flame, Crown, Target, Globe,
-  Package, Shield, Sword, BarChart3, User } from 'lucide-react';
+  Package, Shield, Sword, BarChart3, User, ChevronLeft } from 'lucide-react';
 import { Achievement } from '../lib/supabase';
 
 const ACHIEVEMENT_META: Record<string, { label: string; icon: React.ReactNode; color: string; desc: string; category: string }> = {
@@ -41,6 +41,7 @@ export default function AchievementsPage({ achievements, onBack }: Props) {
     <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-7 pb-10">
 
       {/* Header */}
+      <button onClick={onBack} className="nx-nav-item w-fit"><ChevronLeft size={16} /> Dashboard</button>
       <motion.div
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}

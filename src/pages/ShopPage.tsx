@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBag, Zap, Shield, Sword, Star, Package,
-  CheckCircle2, Clock, Gift, ChevronRight, Info, X,
+  CheckCircle2, Clock, Gift, ChevronRight, Info, X, ChevronLeft,
 } from 'lucide-react';
 import { ShopItem, InventoryItem, getShopItems } from '../lib/supabase';
 import { Player } from '../lib/supabase';
@@ -83,6 +83,7 @@ export default function ShopPage({ player, inventory, onPurchase, onBack }: Prop
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-7 pb-10">
 
       {/* Header */}
+      <button onClick={onBack} className="nx-nav-item w-fit"><ChevronLeft size={16} /> Dashboard</button>
       <motion.div
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}

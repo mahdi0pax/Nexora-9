@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Bell, Eye, Gamepad2, Moon, Wallet, ChevronRight, Shield, LogOut } from 'lucide-react';
+import { User, Bell, Eye, Gamepad2, Moon, Wallet, ChevronRight, Shield, LogOut, ChevronLeft } from 'lucide-react';
 import { Player } from '../lib/supabase';
 
 type SettingsSection = 'account' | 'notifications' | 'privacy' | 'gameplay' | 'appearance';
@@ -75,6 +75,7 @@ export default function SettingsPage({ player, walletAddress, onBack, onDisconne
 
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto pb-10">
+      <button onClick={onBack} className="nx-nav-item w-fit mb-4"><ChevronLeft size={16} /> Dashboard</button>
 
       <motion.div
         initial={{ opacity: 0, y: -12 }}

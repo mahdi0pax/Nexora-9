@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Trophy, TrendingUp, TrendingDown, Minus, Crown,
-  Sword, Sparkles, Zap, ChevronRight, Users,
+  Sword, Sparkles, ChevronRight, Users, ChevronLeft,
 } from 'lucide-react';
 import { RANK_TIERS } from '../design-system/tokens';
-import { Player, getLeaderboard, getWeeklyLeaderboard, getBossLeaderboard } from '../lib/supabase';
+import { Player, getWeeklyLeaderboard, getBossLeaderboard } from '../lib/supabase';
 
 type Tab = 'alltime' | 'weekly' | 'boss' | 'premium';
 
@@ -72,22 +72,25 @@ export default function LeaderboardPage({ walletAddress, allTimeLb, onBack }: Pr
         transition={{ duration: 0.4 }}
         className="flex items-center justify-between"
       >
-        <div>
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-title font-semibold tracking-widest uppercase mb-2"
-            style={{ background: 'rgba(255,208,128,0.1)', border: '1px solid rgba(255,208,128,0.2)', color: '#FFD080' }}
-          >
-            <Trophy size={10} /> Global Rankings
+        <div className="flex items-start gap-3">
+          <button onClick={onBack} className="nx-nav-item mt-1"><ChevronLeft size={16} /></button>
+          <div>
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-title font-semibold tracking-widest uppercase mb-2"
+              style={{ background: 'rgba(255,208,128,0.1)', border: '1px solid rgba(255,208,128,0.2)', color: '#FFD080' }}
+            >
+              <Trophy size={10} /> Global Rankings
+            </div>
+            <h1
+              className="font-title font-extrabold text-3xl md:text-4xl"
+              style={{ color: '#E6EDF7', letterSpacing: '-0.04em' }}
+            >
+              Leaderboard
+            </h1>
+            <p className="text-sm mt-1" style={{ color: 'rgba(230,237,247,0.4)' }}>
+              Compete with players worldwide.
+            </p>
           </div>
-          <h1
-            className="font-title font-extrabold text-3xl md:text-4xl"
-            style={{ color: '#E6EDF7', letterSpacing: '-0.04em' }}
-          >
-            Leaderboard
-          </h1>
-          <p className="text-sm mt-1" style={{ color: 'rgba(230,237,247,0.4)' }}>
-            Compete with players worldwide.
-          </p>
         </div>
         {myPosition > 0 && (
           <div

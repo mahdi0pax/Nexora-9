@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, Zap, CheckCircle2, XCircle, Lightbulb } from 'lucide-react';
 import { CATEGORIES } from '../../design-system/tokens';
-import { Question, AnswerState } from '../../store/useGameStore';
-import { Player } from '../../lib/supabase';
+import type { Question, AnswerState } from '../../store/useGameStore';
+import type { Player } from '../../lib/supabase';
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
@@ -42,7 +42,7 @@ function ProgressRing({ pct, size, color }: { pct: number; size: number; color: 
   );
 }
 
-export default function Playing({ player, categoryId, questions, currentQ, totalQ, selectedOption, answerState, sessionCorrect, sessionScore, pendingXp, isBoss, isDaily, onSubmit, onNext, onQuit }: Props) {
+export default function Playing({ categoryId, questions, currentQ, totalQ, selectedOption, answerState, sessionCorrect, sessionScore, pendingXp, isBoss, isDaily, onSubmit, onNext, onQuit }: Props) {
   const cat      = CATEGORIES.find(c => c.id === categoryId);
   const question = questions[currentQ];
   const [showHint, setShowHint]   = useState(false);

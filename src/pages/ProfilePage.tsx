@@ -4,6 +4,7 @@ import {
   User, Zap, Flame, Trophy, Crown, Target, BarChart3,
   CheckCircle2, Sword, Shield, ChevronRight, FlaskConical, Clock,
   Cpu, Calculator, BookOpen, Globe, Lightbulb, Bitcoin, Package,
+  ChevronLeft,
 } from 'lucide-react';
 import { CATEGORIES, RANK_TIERS } from '../design-system/tokens';
 import { Player, CategoryMastery, ChallengeSession, Achievement, InventoryItem } from '../lib/supabase';
@@ -66,6 +67,7 @@ export default function ProfilePage({ player, mastery, sessions, achievements, i
 
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-6 pb-10">
+      <button onClick={onBack} className="nx-nav-item w-fit"><ChevronLeft size={16} /> Dashboard</button>
 
       {/* Profile hero */}
       <motion.div
