@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore } from './store/useGameStore';
 import AppShell from './components/AppShell';
 import Landing from './pages/Landing';
@@ -11,8 +13,27 @@ import ShopPage from './pages/ShopPage';
 import ProfilePage from './pages/ProfilePage';
 import AchievementsPage from './pages/AchievementsPage';
 import SettingsPage from './pages/SettingsPage';
+import DailySpinPage from './pages/DailySpinPage';
+import PremiumLeaguePage from './pages/PremiumLeaguePage';
+import BossChallengePage from './pages/BossChallengePage';
+import OraclePage from './pages/OraclePage';
+import MentorPage from './pages/MentorPage';
+import WeeklyReportPage from './pages/WeeklyReportPage';
+import LorePage from './pages/LorePage';
 
-type AppScreen = 'dashboard' | 'category_select' | 'challenge_start' | 'playing' | 'complete' | 'leaderboard' | 'shop' | 'profile' | 'achievements' | 'settings';
+type AppScreen =
+  | 'dashboard' | 'category_select' | 'challenge_start' | 'playing' | 'complete'
+  | 'leaderboard' | 'daily_spin' | 'shop' | 'premium_league' | 'boss_challenge'
+  | 'profile' | 'achievements' | 'settings'
+  | 'oracle' | 'mentor' | 'weekly_report' | 'lore';
+
+const FULLSCREEN_SCREENS: AppScreen[] = ['playing'];
+
+const pageVariants = {
+  initial: { opacity: 0, y: 8 },
+  enter: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+};
 
 export default function App() {
   const {
@@ -29,6 +50,13 @@ export default function App() {
     goToProfile,
     goToAchievements,
     goToSettings,
+    goToDailySpin,
+    goToPremiumLeague,
+    goToBossChallenge,
+    goToOracle,
+    goToMentor,
+    goToWeeklyReport,
+    goToLore,
     showToast,
     purchaseShopItem,
   } = useGameStore();
@@ -41,12 +69,20 @@ export default function App() {
 
   function handleNavigate(screen: AppScreen) {
     switch (screen) {
-      case 'dashboard':    goToDashboard();    break;
-      case 'leaderboard':  goToLeaderboard();  break;
-      case 'shop':         goToShop();         break;
-      case 'profile':      goToProfile();      break;
-      case 'achievements': goToAchievements(); break;
-      case 'settings':     goToSettings();     break;
+      case 'dashboard':        goToDashboard();      break;
+      case 'category_select':  goToCategorySelect();  break;
+      case 'leaderboard':      goToLeaderboard();     break;
+      case 'shop':             goToShop();            break;
+      case 'profile':          goToProfile();         break;
+      case 'achievements':     goToAchievements();    break;
+      case 'settings':         goToSettings();        break;
+      case 'daily_spin':       goToDailySpin();       break;
+      case 'premium_league':   goToPremiumLeague();   break;
+      case 'boss_challenge':   goToBossChallenge();   break;
+      case 'oracle':           goToOracle();          break;
+      case 'mentor':           goToMentor();          break;
+      case 'weekly_report':    goToWeeklyReport();    break;
+      case 'lore':             goToLore();            break;
     }
   }
 
@@ -55,13 +91,12 @@ export default function App() {
     window.location.reload();
   }
 
-  if (state.screen === 'landing') {
+  if (state.screen === 'landing' || !state.player || !state.walletAddress) {
     return <Landing onConnectWallet={() => connectWallet()} />;
   }
 
-  if (!state.player || !state.walletAddress) {
-    return <Landing onConnectWallet={() => connectWallet()} />;
-  }
+  const screen = state.screen as AppScreen;
+  const isFullscreen = FULLSCREEN_SCREENS.includes(screen);
 
   const pageContent = (() => {
     switch (state.screen) {
@@ -196,20 +231,76 @@ export default function App() {
           />
         );
 
+      case 'daily_spin':
+        return <DailySpinPage player={state.player!} onBack={goToDashboard} />;
+
+      case 'premium_league':
+        return <PremiumLeaguePage player={state.player!} onBack={goToDashboard} />;
+
+      case 'boss_challenge':
+        return <BossChallengePage player={state.player!} onBack={goToDashboard} />;
+
+      case 'oracle':
+        return <OraclePage player={state.player!} onBack={goToDashboard} />;
+
+      case 'mentor':
+        return <MentorPage player={state.player!} onBack={goToDashboard} />;
+
+      case 'weekly_report':
+        return <WeeklyReportPage player={state.player!} onBack={goToDashboard} />;
+
+      case 'lore':
+        return <LorePage player={state.player!} onBack={goToDashboard} />;
+
       default:
-        return <Landing onConnectWallet={() => connectWallet()} />;
+        return <Dashboard
+          state={state}
+          onStartChallenge={startChallenge}
+          onGoToCategorySelect={goToCategorySelect}
+          onGoToLeaderboard={goToLeaderboard}
+          onGoToShop={goToShop}
+          onGoToProfile={goToProfile}
+          onGoToAchievements={goToAchievements}
+          onGoToSettings={goToSettings}
+        />;
     }
   })();
+
+  // Fullscreen screens render without the shell's main padding wrapper
+  if (isFullscreen && state.screen === 'playing') {
+    return (
+      <AppShell
+        player={state.player}
+        walletAddress={state.walletAddress}
+        currentScreen={screen}
+        onNavigate={handleNavigate}
+        onDisconnect={handleDisconnect}
+      >
+        {pageContent}
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell
       player={state.player}
       walletAddress={state.walletAddress}
-      currentScreen={state.screen as AppScreen}
+      currentScreen={screen}
       onNavigate={handleNavigate}
       onDisconnect={handleDisconnect}
     >
-      {pageContent}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={state.screen}
+          initial="initial"
+          animate="enter"
+          exit="exit"
+          variants={pageVariants}
+          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+        >
+          {pageContent}
+        </motion.div>
+      </AnimatePresence>
     </AppShell>
   );
 }

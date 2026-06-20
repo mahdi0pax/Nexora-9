@@ -29,7 +29,14 @@ export type GameScreen =
   | 'shop'
   | 'profile'
   | 'achievements'
-  | 'settings';
+  | 'settings'
+  | 'daily_spin'
+  | 'premium_league'
+  | 'boss_challenge'
+  | 'oracle'
+  | 'mentor'
+  | 'weekly_report'
+  | 'lore';
 
 export type AnswerState = 'idle' | 'selected' | 'revealing' | 'correct' | 'wrong';
 
@@ -340,6 +347,13 @@ export function useGameStore() {
   const goToProfile        = useCallback(() => set({ screen: 'profile' }), [set]);
   const goToAchievements   = useCallback(() => set({ screen: 'achievements' }), [set]);
   const goToSettings       = useCallback(() => set({ screen: 'settings' }), [set]);
+  const goToDailySpin      = useCallback(() => set({ screen: 'daily_spin' }), [set]);
+  const goToPremiumLeague  = useCallback(() => set({ screen: 'premium_league' }), [set]);
+  const goToBossChallenge  = useCallback(() => set({ screen: 'boss_challenge' }), [set]);
+  const goToOracle         = useCallback(() => set({ screen: 'oracle' }), [set]);
+  const goToMentor         = useCallback(() => set({ screen: 'mentor' }), [set]);
+  const goToWeeklyReport   = useCallback(() => set({ screen: 'weekly_report' }), [set]);
+  const goToLore            = useCallback(() => set({ screen: 'lore' }), [set]);
 
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info') => {
     set({ toast: { message, type } });
@@ -409,6 +423,13 @@ export function useGameStore() {
     goToProfile,
     goToAchievements,
     goToSettings,
+    goToDailySpin,
+    goToPremiumLeague,
+    goToBossChallenge,
+    goToOracle,
+    goToMentor,
+    goToWeeklyReport,
+    goToLore,
     showToast,
     handleSpin,
     purchaseShopItem,

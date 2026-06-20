@@ -3,12 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Trophy, ShoppingBag, User, Award, Settings,
   ChevronRight, Menu, X, Zap, Flame, Crown, LogOut,
+  Dices, Sword, BrainCircuit, Eye, BarChart3, BookMarked, Sparkles,
 } from 'lucide-react';
 import { NexoraMark, NexoraWordmark } from '../design-system/Logo';
 import { Player } from '../lib/supabase';
 import { RANK_TIERS } from '../design-system/tokens';
 
-type AppScreen = 'dashboard' | 'category_select' | 'challenge_start' | 'playing' | 'complete' | 'leaderboard' | 'shop' | 'profile' | 'achievements' | 'settings';
+type AppScreen =
+  | 'dashboard' | 'category_select' | 'challenge_start' | 'playing' | 'complete'
+  | 'leaderboard' | 'daily_spin' | 'shop' | 'premium_league' | 'boss_challenge'
+  | 'profile' | 'achievements' | 'settings'
+  | 'oracle' | 'mentor' | 'weekly_report' | 'lore';
 
 interface AppShellProps {
   player: Player;
@@ -19,20 +24,60 @@ interface AppShellProps {
   onDisconnect: () => void;
 }
 
-const NAV_ITEMS = [
-  { id: 'dashboard',    label: 'Dashboard',    icon: <LayoutDashboard size={18} /> },
-  { id: 'leaderboard',  label: 'Leaderboard',  icon: <Trophy size={18} /> },
-  { id: 'shop',         label: 'Shop',         icon: <ShoppingBag size={18} /> },
-  { id: 'profile',      label: 'Profile',      icon: <User size={18} /> },
-  { id: 'achievements', label: 'Achievements', icon: <Award size={18} /> },
-] as const;
+interface NavItem {
+  id: AppScreen;
+  label: string;
+  icon: React.ReactNode;
+  badge?: string;
+}
 
-const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  science: <FlaskConical size={14} />, history: <Clock size={14} />,
-  technology: <Cpu size={14} />, mathematics: <Calculator size={14} />,
-  literature: <BookOpen size={14} />, geography: <Globe size={14} />,
-  logic: <Lightbulb size={14} />, crypto_web3: <Bitcoin size={14} />,
-};
+interface NavGroup {
+  id: string;
+  label: string;
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    id: 'main',
+    label: 'Main',
+    items: [
+      { id: 'dashboard',    label: 'Dashboard',    icon: <LayoutDashboard size={18} /> },
+      { id: 'category_select', label: 'Categories',  icon: <Sparkles size={18} /> },
+    ],
+  },
+  {
+    id: 'compete',
+    label: 'Compete',
+    items: [
+      { id: 'leaderboard',    label: 'Leaderboard',  icon: <Trophy size={18} /> },
+      { id: 'boss_challenge', label: 'Boss Challenge', icon: <Sword size={18} /> },
+      { id: 'premium_league', label: 'Premium League', icon: <Crown size={18} /> },
+      { id: 'daily_spin',     label: 'Daily Spin',   icon: <Dices size={18} /> },
+    ],
+  },
+  {
+    id: 'engage',
+    label: 'Engage',
+    items: [
+      { id: 'oracle',         label: 'Oracle',         icon: <Eye size={18} /> },
+      { id: 'mentor',         label: 'AI Mentor',       icon: <BrainCircuit size={18} /> },
+      { id: 'weekly_report', label: 'Weekly Report',   icon: <BarChart3 size={18} /> },
+      { id: 'lore',           label: 'Lore & Story',   icon: <BookMarked size={18} /> },
+    ],
+  },
+  {
+    id: 'account',
+    label: 'Account',
+    items: [
+      { id: 'shop',         label: 'Shop',         icon: <ShoppingBag size={18} /> },
+      { id: 'profile',      label: 'Profile',      icon: <User size={18} /> },
+      { id: 'achievements', label: 'Achievements', icon: <Award size={18} /> },
+    ],
+  },
+];
+
+const ALL_NAV_ITEMS = NAV_GROUPS.flatMap(g => g.items);
 
 function abbrev(addr: string) {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -42,7 +87,7 @@ function rankInfo(tier: string) {
   return RANK_TIERS.find(r => r.id === tier) ?? RANK_TIERS[0];
 }
 
-const GAMEPLAY_SCREENS: AppScreen[] = ['category_select', 'challenge_start', 'playing', 'complete'];
+const GAMEPLAY_SCREENS: AppScreen[] = ['challenge_start', 'playing', 'complete'];
 
 export default function AppShell({ player, walletAddress, currentScreen, children, onNavigate, onDisconnect }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -145,7 +190,7 @@ export default function AppShell({ player, walletAddress, currentScreen, childre
           {/* Desktop: page title area (empty — sidebar has logo) */}
           <div className="hidden lg:flex items-center gap-2">
             <span className="font-title font-semibold text-sm" style={{ color: 'rgba(230,237,247,0.4)' }}>
-              {NAV_ITEMS.find(n => n.id === currentScreen)?.label ?? 'Nexora'}
+              {ALL_NAV_ITEMS.find(n => n.id === currentScreen)?.label ?? 'Nexora'}
             </span>
           </div>
 
@@ -309,64 +354,76 @@ function SidebarContent({
       )}
 
       {/* Nav items */}
-      <nav className="flex-1 overflow-y-auto px-3 space-y-1 py-2">
-        {NAV_ITEMS.map(item => {
-          const active = currentScreen === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => onNavigate(item.id as AppScreen)}
-              className="w-full flex items-center gap-3 rounded-xl transition-all duration-200 group relative overflow-hidden"
-              style={{
-                padding: collapsed ? '10px' : '10px 12px',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                background: active ? 'rgba(124,92,252,0.15)' : 'transparent',
-                border: active ? '1px solid rgba(124,92,252,0.25)' : '1px solid transparent',
-                color: active ? '#9B81FF' : 'rgba(230,237,247,0.45)',
-              }}
-              onMouseEnter={e => {
-                if (!active) {
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(28,38,64,0.7)';
-                  (e.currentTarget as HTMLElement).style.color = 'rgba(230,237,247,0.8)';
-                }
-              }}
-              onMouseLeave={e => {
-                if (!active) {
-                  (e.currentTarget as HTMLElement).style.background = 'transparent';
-                  (e.currentTarget as HTMLElement).style.color = 'rgba(230,237,247,0.45)';
-                }
-              }}
-            >
-              {active && (
-                <motion.div
-                  layoutId="nav-active"
-                  className="absolute inset-0 rounded-xl"
-                  style={{ background: 'rgba(124,92,252,0.08)' }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                />
-              )}
-              <span className="relative z-10 flex-shrink-0">{item.icon}</span>
-              <AnimatePresence>
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="relative z-10 font-title font-medium text-sm whitespace-nowrap overflow-hidden"
-                  >
-                    {item.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
-          );
-        })}
+      <nav className="flex-1 overflow-y-auto px-3 space-y-4 py-2">
+        {NAV_GROUPS.map(group => (
+          <div key={group.id} className="space-y-1">
+            {!collapsed && (
+              <div
+                className="text-[10px] font-title font-bold uppercase tracking-[0.15em] px-2 pb-1"
+                style={{ color: 'rgba(230,237,247,0.3)' }}
+              >
+                {group.label}
+              </div>
+            )}
+            {group.items.map(item => {
+              const active = currentScreen === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onNavigate(item.id as AppScreen)}
+                  className="w-full flex items-center gap-3 rounded-xl transition-all duration-200 group relative overflow-hidden"
+                  style={{
+                    padding: collapsed ? '10px' : '10px 12px',
+                    justifyContent: collapsed ? 'center' : 'flex-start',
+                    background: active ? 'rgba(124,92,252,0.15)' : 'transparent',
+                    border: active ? '1px solid rgba(124,92,252,0.25)' : '1px solid transparent',
+                    color: active ? '#9B81FF' : 'rgba(230,237,247,0.45)',
+                  }}
+                  onMouseEnter={e => {
+                    if (!active) {
+                      (e.currentTarget as HTMLElement).style.background = 'rgba(28,38,64,0.7)';
+                      (e.currentTarget as HTMLElement).style.color = 'rgba(230,237,247,0.8)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!active) {
+                      (e.currentTarget as HTMLElement).style.background = 'transparent';
+                      (e.currentTarget as HTMLElement).style.color = 'rgba(230,237,247,0.45)';
+                    }
+                  }}
+                >
+                  {active && (
+                    <motion.div
+                      layoutId="nav-active"
+                      className="absolute inset-0 rounded-xl"
+                      style={{ background: 'rgba(124,92,252,0.08)' }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex-shrink-0">{item.icon}</span>
+                  <AnimatePresence>
+                    {!collapsed && (
+                      <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: 'auto' }}
+                        exit={{ opacity: 0, width: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="relative z-10 font-title font-medium text-sm whitespace-nowrap overflow-hidden"
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </button>
+              );
+            })}
+          </div>
+        ))}
 
-        {/* Settings */}
+        {/* Settings — standalone at bottom of nav */}
         <button
           onClick={() => onNavigate('settings')}
-          className="w-full flex items-center gap-3 rounded-xl transition-all duration-200 mt-4"
+          className="w-full flex items-center gap-3 rounded-xl transition-all duration-200 mt-2"
           style={{
             padding: collapsed ? '10px' : '10px 12px',
             justifyContent: collapsed ? 'center' : 'flex-start',
