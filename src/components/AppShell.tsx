@@ -3,30 +3,80 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Trophy, ShoppingBag, User, Award, Settings,
   ChevronRight, Menu, X, Zap, Flame, Crown, LogOut,
-  FlaskConical, Clock, Cpu, Calculator, BookOpen, Globe, Lightbulb, Bitcoin,
+  Sparkles, Swords, Gem, Compass, Brain, ScrollText, BookOpen,
 } from 'lucide-react';
 import { NexoraMark, NexoraWordmark } from '../design-system/Logo';
 import { Player } from '../lib/supabase';
 import { rankInfo } from '../lib/constants';
 
-type AppScreen = 'dashboard' | 'category_select' | 'challenge_start' | 'playing' | 'complete' | 'leaderboard' | 'shop' | 'profile' | 'achievements' | 'settings';
+export type AppScreen =
+  | 'dashboard' | 'category_select' | 'challenge_start' | 'playing' | 'complete'
+  | 'leaderboard' | 'shop' | 'profile' | 'achievements' | 'settings'
+  | 'daily_spin' | 'premium_league' | 'boss_challenge'
+  | 'oracle' | 'mentor' | 'weekly_report' | 'lore';
 
 interface AppShellProps {
-  player: Player;
-  walletAddress: string;
+  player: Player | null;
+  walletAddress: string | null;
   currentScreen: AppScreen;
   children: React.ReactNode;
   onNavigate: (screen: AppScreen) => void;
   onDisconnect: () => void;
 }
 
-const NAV_ITEMS = [
-  { id: 'dashboard',    label: 'Dashboard',    icon: <LayoutDashboard size={18} /> },
-  { id: 'leaderboard',  label: 'Leaderboard',  icon: <Trophy size={18} /> },
-  { id: 'shop',         label: 'Shop',         icon: <ShoppingBag size={18} /> },
-  { id: 'profile',      label: 'Profile',      icon: <User size={18} /> },
-  { id: 'achievements', label: 'Achievements', icon: <Award size={18} /> },
-] as const;
+/* ── Navigation structure ─────────────────────────────────────────────── */
+
+interface NavGroup {
+  label?: string;
+  items: { id: AppScreen; label: string; icon: React.ReactNode; badge?: string }[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    items: [
+      { id: 'dashboard',    label: 'Dashboard',    icon: <LayoutDashboard size={18} /> },
+    ],
+  },
+  {
+    label: 'Play',
+    items: [
+      { id: 'category_select', label: 'Categories',     icon: <Compass size={18} /> },
+      { id: 'boss_challenge',  label: 'Boss Challenge', icon: <Swords size={18} /> },
+      { id: 'daily_spin',      label: 'Daily Spin',     icon: <Sparkles size={18} /> },
+    ],
+  },
+  {
+    label: 'Compete',
+    items: [
+      { id: 'leaderboard',    label: 'Leaderboard',    icon: <Trophy size={18} /> },
+      { id: 'premium_league', label: 'Premium League', icon: <Gem size={18} /> },
+    ],
+  },
+  {
+    label: 'Social',
+    items: [
+      { id: 'profile',      label: 'Profile',      icon: <User size={18} /> },
+      { id: 'achievements', label: 'Achievements', icon: <Award size={18} /> },
+    ],
+  },
+  {
+    label: 'Learn',
+    items: [
+      { id: 'oracle',       label: 'Oracle',       icon: <Brain size={18} /> },
+      { id: 'mentor',       label: 'Mentor',       icon: <BookOpen size={18} /> },
+      { id: 'weekly_report',label: 'Weekly Report',icon: <ScrollText size={18} /> },
+      { id: 'lore',         label: 'Lore',         icon: <ScrollText size={18} /> },
+    ],
+  },
+  {
+    label: 'Economy',
+    items: [
+      { id: 'shop',         label: 'Shop',         icon: <ShoppingBag size={18} /> },
+    ],
+  },
+];
+
+
 
 function abbrev(addr: string) {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -38,24 +88,22 @@ export default function AppShell({ player, walletAddress, currentScreen, childre
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed,   setCollapsed]   = useState(false);
   const isGameplay = GAMEPLAY_SCREENS.includes(currentScreen);
-  const rank = rankInfo(player.rank_tier);
-  const xpPct = Math.min(100, player.current_xp > 0 ? (player.current_xp / (player.level * 200 + 800)) * 100 : 0);
+  const rank = player ? rankInfo(player.rank_tier) : rankInfo('bronze');
+  const xpPct = player ? Math.min(100, player.current_xp > 0 ? (player.current_xp / (player.level * 200 + 800)) * 100 : 0) : 0;
 
-  // Close drawer on navigation
   useEffect(() => { setSidebarOpen(false); }, [currentScreen]);
 
-  // Close drawer on Escape
   useEffect(() => {
     const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') setSidebarOpen(false); };
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
   }, []);
 
-  if (isGameplay) return <>{children}</>;
+  if (isGameplay || !player || !walletAddress) return <>{children}</>;
 
   return (
     <div className="min-h-screen flex" style={{ background: '#0B1020' }}>
-      {/* ── Mobile overlay ─────────────────────────────────────── */}
+      {/* Mobile overlay */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
@@ -68,7 +116,7 @@ export default function AppShell({ player, walletAddress, currentScreen, childre
         )}
       </AnimatePresence>
 
-      {/* ── Mobile sidebar drawer ──────────────────────────────── */}
+      {/* Mobile sidebar drawer */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.aside
@@ -93,7 +141,7 @@ export default function AppShell({ player, walletAddress, currentScreen, childre
         )}
       </AnimatePresence>
 
-      {/* ── Desktop sidebar ─────────────────────────────────────── */}
+      {/* Desktop sidebar */}
       <motion.aside
         animate={{ width: collapsed ? 72 : 256 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
@@ -113,7 +161,7 @@ export default function AppShell({ player, walletAddress, currentScreen, childre
         />
       </motion.aside>
 
-      {/* ── Main content ────────────────────────────────────────── */}
+      {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <header
@@ -132,14 +180,14 @@ export default function AppShell({ player, walletAddress, currentScreen, childre
             <NexoraWordmark size={24} tint="default" showText textPlacement="right" />
           </div>
 
-          {/* Desktop: page title area (empty — sidebar has logo) */}
+          {/* Desktop: page title */}
           <div className="hidden lg:flex items-center gap-2">
             <span className="font-title font-semibold text-sm" style={{ color: 'rgba(230,237,247,0.4)' }}>
-              {NAV_ITEMS.find(n => n.id === currentScreen)?.label ?? 'Nexora'}
+              {pageTitle(currentScreen)}
             </span>
           </div>
 
-          {/* Right side: wallet + streak + RITUAL */}
+          {/* Right side: wallet + streak + level */}
           <div className="flex items-center gap-2 md:gap-3">
             {player.streak_days > 0 && (
               <div
@@ -185,7 +233,17 @@ export default function AppShell({ player, walletAddress, currentScreen, childre
   );
 }
 
-// ── Sidebar content (shared between mobile drawer and desktop) ─────────────
+/* ── Helpers ──────────────────────────────────────────────────────────── */
+
+function pageTitle(screen: AppScreen): string {
+  for (const g of NAV_GROUPS) {
+    const item = g.items.find(i => i.id === screen);
+    if (item) return item.label;
+  }
+  return 'Nexora';
+}
+
+/* ── Sidebar content ──────────────────────────────────────────────────── */
 
 interface SidebarContentProps {
   player: Player;
@@ -220,11 +278,7 @@ function SidebarContent({
           )}
         </div>
         {showClose && (
-          <button
-            onClick={onClose}
-            className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{ color: 'rgba(230,237,247,0.4)' }}
-          >
+          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ color: 'rgba(230,237,247,0.4)' }}>
             <X size={16} />
           </button>
         )}
@@ -241,7 +295,7 @@ function SidebarContent({
         )}
       </div>
 
-      {/* Player identity card */}
+      {/* Player card */}
       <AnimatePresence>
         {!collapsed && (
           <motion.div
@@ -266,7 +320,6 @@ function SidebarContent({
                 </div>
               </div>
             </div>
-            {/* XP bar */}
             <div className="space-y-1">
               <div className="flex items-center justify-between text-2xs">
                 <span className="font-title font-semibold" style={{ color: '#9B81FF' }}>Level {player.level}</span>
@@ -298,81 +351,98 @@ function SidebarContent({
         </div>
       )}
 
-      {/* Nav items */}
-      <nav className="flex-1 overflow-y-auto px-3 space-y-1 py-2">
-        {NAV_ITEMS.map(item => {
-          const active = currentScreen === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => onNavigate(item.id as AppScreen)}
-              className="w-full flex items-center gap-3 rounded-xl transition-all duration-200 group relative overflow-hidden"
-              style={{
-                padding: collapsed ? '10px' : '10px 12px',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                background: active ? 'rgba(124,92,252,0.15)' : 'transparent',
-                border: active ? '1px solid rgba(124,92,252,0.25)' : '1px solid transparent',
-                color: active ? '#9B81FF' : 'rgba(230,237,247,0.45)',
-              }}
-              onMouseEnter={e => {
-                if (!active) {
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(28,38,64,0.7)';
-                  (e.currentTarget as HTMLElement).style.color = 'rgba(230,237,247,0.8)';
-                }
-              }}
-              onMouseLeave={e => {
-                if (!active) {
-                  (e.currentTarget as HTMLElement).style.background = 'transparent';
-                  (e.currentTarget as HTMLElement).style.color = 'rgba(230,237,247,0.45)';
-                }
-              }}
-            >
-              {active && (
-                <motion.div
-                  layoutId="nav-active"
-                  className="absolute inset-0 rounded-xl"
-                  style={{ background: 'rgba(124,92,252,0.08)' }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                />
-              )}
-              <span className="relative z-10 flex-shrink-0">{item.icon}</span>
-              <AnimatePresence>
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="relative z-10 font-title font-medium text-sm whitespace-nowrap overflow-hidden"
+      {/* Navigation groups */}
+      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
+        {NAV_GROUPS.map((group, gIdx) => (
+          <div key={gIdx}>
+            {!collapsed && group.label && (
+              <div className="px-3 mb-1.5 text-2xs font-title font-semibold uppercase tracking-wider" style={{ color: 'rgba(230,237,247,0.2)' }}>
+                {group.label}
+              </div>
+            )}
+            <div className="space-y-0.5">
+              {group.items.map(item => {
+                const active = currentScreen === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onNavigate(item.id)}
+                    className="w-full flex items-center gap-3 rounded-xl transition-all duration-200 group relative overflow-hidden"
+                    style={{
+                      padding: collapsed ? '10px' : '10px 12px',
+                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      background: active ? 'rgba(124,92,252,0.15)' : 'transparent',
+                      border: active ? '1px solid rgba(124,92,252,0.25)' : '1px solid transparent',
+                      color: active ? '#9B81FF' : 'rgba(230,237,247,0.45)',
+                    }}
+                    onMouseEnter={e => {
+                      if (!active) {
+                        (e.currentTarget as HTMLElement).style.background = 'rgba(28,38,64,0.7)';
+                        (e.currentTarget as HTMLElement).style.color = 'rgba(230,237,247,0.8)';
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!active) {
+                        (e.currentTarget as HTMLElement).style.background = 'transparent';
+                        (e.currentTarget as HTMLElement).style.color = 'rgba(230,237,247,0.45)';
+                      }
+                    }}
                   >
-                    {item.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
-          );
-        })}
+                    {active && (
+                      <motion.div
+                        layoutId="nav-active"
+                        className="absolute inset-0 rounded-xl"
+                        style={{ background: 'rgba(124,92,252,0.08)' }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                      />
+                    )}
+                    <span className="relative z-10 flex-shrink-0">{item.icon}</span>
+                    <AnimatePresence>
+                      {!collapsed && (
+                        <motion.span
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: 'auto' }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="relative z-10 font-title font-medium text-sm whitespace-nowrap overflow-hidden"
+                        >
+                          {item.label}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                    {!collapsed && item.badge && (
+                      <span className="relative z-10 ml-auto text-2xs font-bold px-1.5 py-0.5 rounded-md" style={{ background: 'rgba(124,92,252,0.2)', color: '#9B81FF' }}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
 
-        {/* Settings */}
-        <button
-          onClick={() => onNavigate('settings')}
-          className="w-full flex items-center gap-3 rounded-xl transition-all duration-200 mt-4"
-          style={{
-            padding: collapsed ? '10px' : '10px 12px',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            background: currentScreen === 'settings' ? 'rgba(124,92,252,0.15)' : 'transparent',
-            border: currentScreen === 'settings' ? '1px solid rgba(124,92,252,0.25)' : '1px solid transparent',
-            color: currentScreen === 'settings' ? '#9B81FF' : 'rgba(230,237,247,0.3)',
-          }}
-        >
-          <Settings size={18} />
-          {!collapsed && <span className="font-title font-medium text-sm">Settings</span>}
-        </button>
+        {/* Settings at bottom of nav */}
+        <div className="pt-2" style={{ borderTop: '1px solid rgba(124,92,252,0.08)' }}>
+          <button
+            onClick={() => onNavigate('settings')}
+            className="w-full flex items-center gap-3 rounded-xl transition-all duration-200"
+            style={{
+              padding: collapsed ? '10px' : '10px 12px',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              background: currentScreen === 'settings' ? 'rgba(124,92,252,0.15)' : 'transparent',
+              border: currentScreen === 'settings' ? '1px solid rgba(124,92,252,0.25)' : '1px solid transparent',
+              color: currentScreen === 'settings' ? '#9B81FF' : 'rgba(230,237,247,0.3)',
+            }}
+          >
+            <Settings size={18} />
+            {!collapsed && <span className="font-title font-medium text-sm">Settings</span>}
+          </button>
+        </div>
       </nav>
 
       {/* Bottom: RITUAL balance + disconnect */}
       <div className="px-3 pb-4 flex-shrink-0 space-y-2" style={{ borderTop: '1px solid rgba(124,92,252,0.1)', paddingTop: '12px' }}>
-        {/* RITUAL balance */}
         <AnimatePresence>
           {!collapsed && (
             <motion.div
@@ -391,7 +461,6 @@ function SidebarContent({
           )}
         </AnimatePresence>
 
-        {/* Disconnect */}
         <button
           onClick={onDisconnect}
           className="w-full flex items-center gap-2.5 rounded-xl transition-all duration-200 group"

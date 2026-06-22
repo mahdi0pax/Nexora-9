@@ -49,7 +49,6 @@ function Row({ label, desc, children }: { label: string; desc?: string; children
 interface Props {
   player: Player;
   walletAddress: string;
-  onBack: () => void;
   onDisconnect: () => void;
 }
 

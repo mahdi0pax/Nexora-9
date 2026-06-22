@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   Zap, Flame, Trophy, Crown, Sparkles, TrendingUp, Target,
   Calendar, ChevronRight, Sword, ShoppingBag, Shield, Lock, Award,
-  BarChart3, CheckCircle2,
+  BarChart3, CheckCircle2, Brain, BookOpen, ScrollText, Compass,
 } from 'lucide-react';
 import { CATEGORIES } from '../design-system/tokens';
 import { Player, ChallengeSession, Achievement } from '../lib/supabase';
@@ -19,6 +19,10 @@ interface DashboardProps {
   onGoToProfile: () => void;
   onGoToAchievements: () => void;
   onGoToSettings: () => void;
+  onGoToOracle?: () => void;
+  onGoToMentor?: () => void;
+  onGoToWeeklyReport?: () => void;
+  onGoToLore?: () => void;
 }
 
 // Icons from shared constants — use CATEGORY_ICONS[cat.id] for category icons
@@ -56,7 +60,7 @@ function Card({ children, index = 0, className = '' }: { children: React.ReactNo
   );
 }
 
-export default function Dashboard({ state, onStartChallenge, onGoToCategorySelect, onGoToLeaderboard, onGoToShop, onGoToProfile, onGoToAchievements }: DashboardProps) {
+export default function Dashboard({ state, onStartChallenge, onGoToCategorySelect, onGoToLeaderboard, onGoToShop, onGoToProfile, onGoToAchievements, onGoToOracle, onGoToMentor, onGoToWeeklyReport, onGoToLore }: DashboardProps) {
   const { player, mastery, recentSessions, achievements, dailyDone, leaderboard, walletAddress, inventory } = state;
   if (!player) return null;
 
@@ -330,6 +334,48 @@ export default function Dashboard({ state, onStartChallenge, onGoToCategorySelec
                 >
                   Play
                 </span>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      {/* Learn section */}
+      <Card index={14}>
+        <div className="space-y-4">
+          <h3 className="font-title font-bold text-lg" style={{ color: '#E6EDF7' }}>Learn</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'Oracle', icon: <Brain size={18} />, color: '#9B81FF', screen: 'oracle' as const },
+              { label: 'Mentor', icon: <BookOpen size={18} />, color: '#00D4FF', screen: 'mentor' as const },
+              { label: 'Report', icon: <ScrollText size={18} />, color: '#33E8B8', screen: 'weekly_report' as const },
+              { label: 'Lore',   icon: <Compass size={18} />, color: '#B9F2FF', screen: 'lore' as const },
+            ].map((item, i) => (
+              <motion.button
+                key={item.label}
+                custom={i}
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                whileHover={{ y: -3, scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                className="rounded-2xl p-4 flex flex-col items-center gap-2.5 text-center"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(28,38,64,0.9), rgba(20,27,45,0.95))',
+                  border: `1px solid ${item.color}22`,
+                }}
+                onClick={() => {
+                  // Use window dispatch for cross-component navigation
+                  window.dispatchEvent(new CustomEvent('nexora-nav', { detail: item.screen }));
+                }}
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ background: `${item.color}15`, border: `1px solid ${item.color}28`, color: item.color }}
+                >
+                  {item.icon}
+                </div>
+                <div className="font-title font-semibold text-sm" style={{ color: '#E6EDF7' }}>{item.label}</div>
               </motion.button>
             ))}
           </div>

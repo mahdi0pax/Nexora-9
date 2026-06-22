@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { useGameStore } from './store/useGameStore';
 import AppShell from './components/AppShell';
 import Landing from './pages/Landing';
@@ -12,10 +12,14 @@ import ShopPage from './pages/ShopPage';
 import ProfilePage from './pages/ProfilePage';
 import AchievementsPage from './pages/AchievementsPage';
 import SettingsPage from './pages/SettingsPage';
-
-type AppScreen = 'dashboard' | 'category_select' | 'challenge_start' | 'playing' | 'complete' | 'leaderboard' | 'shop' | 'profile' | 'achievements' | 'settings';
-
-const SCREEN_NAV: Record<AppScreen, () => void> = {} as Record<AppScreen, () => void>;
+import DailySpinPage from './pages/DailySpinPage';
+import PremiumLeaguePage from './pages/PremiumLeaguePage';
+import BossChallengePage from './pages/BossChallengePage';
+import OraclePage from './pages/OraclePage';
+import MentorPage from './pages/MentorPage';
+import WeeklyReportPage from './pages/WeeklyReportPage';
+import LorePage from './pages/LorePage';
+import type { AppScreen } from './components/AppShell';
 
 export default function App() {
   const {
@@ -32,6 +36,13 @@ export default function App() {
     goToProfile,
     goToAchievements,
     goToSettings,
+    goToDailySpin,
+    goToPremiumLeague,
+    goToBossChallenge,
+    goToOracle,
+    goToMentor,
+    goToWeeklyReport,
+    goToLore,
     showToast,
     purchaseShopItem,
   } = useGameStore();
@@ -44,14 +55,32 @@ export default function App() {
 
   function handleNavigate(screen: AppScreen) {
     switch (screen) {
-      case 'dashboard':    goToDashboard();    break;
-      case 'leaderboard':  goToLeaderboard();  break;
-      case 'shop':         goToShop();         break;
-      case 'profile':      goToProfile();      break;
-      case 'achievements': goToAchievements(); break;
-      case 'settings':     goToSettings();     break;
+      case 'dashboard':      goToDashboard();      break;
+      case 'leaderboard':    goToLeaderboard();    break;
+      case 'shop':           goToShop();           break;
+      case 'profile':        goToProfile();        break;
+      case 'achievements':   goToAchievements();   break;
+      case 'settings':       goToSettings();       break;
+      case 'daily_spin':     goToDailySpin();      break;
+      case 'premium_league': goToPremiumLeague();  break;
+      case 'boss_challenge': goToBossChallenge();  break;
+      case 'oracle':         goToOracle();         break;
+      case 'mentor':         goToMentor();         break;
+      case 'weekly_report':  goToWeeklyReport();   break;
+      case 'lore':           goToLore();           break;
+      case 'category_select': goToCategorySelect(); break;
+      default:               goToDashboard();      break;
     }
   }
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as AppScreen;
+      handleNavigate(detail);
+    };
+    window.addEventListener('nexora-nav', handler);
+    return () => window.removeEventListener('nexora-nav', handler);
+  }, []);
 
   function handleDisconnect() {
     showToast('Wallet disconnected', 'info');
@@ -79,6 +108,10 @@ export default function App() {
             onGoToProfile={goToProfile}
             onGoToAchievements={goToAchievements}
             onGoToSettings={goToSettings}
+            onGoToOracle={goToOracle}
+            onGoToMentor={goToMentor}
+            onGoToWeeklyReport={goToWeeklyReport}
+            onGoToLore={goToLore}
           />
         );
 
@@ -153,7 +186,6 @@ export default function App() {
           <LeaderboardPage
             walletAddress={state.walletAddress!}
             allTimeLb={state.leaderboard}
-            onBack={goToDashboard}
           />
         );
 
@@ -163,7 +195,6 @@ export default function App() {
             player={state.player!}
             inventory={state.inventory}
             onPurchase={purchaseShopItem}
-            onBack={goToDashboard}
           />
         );
 
@@ -176,28 +207,47 @@ export default function App() {
             achievements={state.achievements}
             inventory={state.inventory}
             walletAddress={state.walletAddress!}
-            onBack={goToDashboard}
             onGoToAchievements={goToAchievements}
           />
         );
 
       case 'achievements':
-        return (
-          <AchievementsPage
-            achievements={state.achievements}
-            onBack={goToDashboard}
-          />
-        );
+        return <AchievementsPage achievements={state.achievements} />;
 
       case 'settings':
         return (
           <SettingsPage
             player={state.player!}
             walletAddress={state.walletAddress!}
-            onBack={goToDashboard}
             onDisconnect={handleDisconnect}
           />
         );
+
+      case 'daily_spin':
+        return <DailySpinPage player={state.player!} />;
+
+      case 'premium_league':
+        return <PremiumLeaguePage player={state.player!} />;
+
+      case 'boss_challenge':
+        return (
+          <BossChallengePage
+            player={state.player!}
+            onStartBoss={(catId) => startChallenge(catId, { isBoss: true })}
+          />
+        );
+
+      case 'oracle':
+        return <OraclePage />;
+
+      case 'mentor':
+        return <MentorPage />;
+
+      case 'weekly_report':
+        return <WeeklyReportPage player={state.player!} />;
+
+      case 'lore':
+        return <LorePage />;
 
       default:
         return <Landing onConnectWallet={() => connectWallet()} />;

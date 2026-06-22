@@ -5,10 +5,9 @@ import { ACHIEVEMENT_META, ACHIEVEMENT_CATEGORIES } from '../lib/constants';
 
 interface Props {
   achievements: Achievement[];
-  onBack: () => void;
 }
 
-export default function AchievementsPage({ achievements, onBack }: Props) {
+export default function AchievementsPage({ achievements }: Props) {
   const unlocked     = new Set(achievements.map(a => a.achievement_id));
   const unlockedAt   = Object.fromEntries(achievements.map(a => [a.achievement_id, a.unlocked_at]));
   const totalCount   = Object.keys(ACHIEVEMENT_META).length;
