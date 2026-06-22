@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { NexoraMark, NexoraWordmark } from '../design-system/Logo';
 import { Player } from '../lib/supabase';
-import { RANK_TIERS } from '../design-system/tokens';
+import { rankInfo } from '../lib/constants';
 
 type AppScreen = 'dashboard' | 'category_select' | 'challenge_start' | 'playing' | 'complete' | 'leaderboard' | 'shop' | 'profile' | 'achievements' | 'settings';
 
@@ -28,19 +28,8 @@ const NAV_ITEMS = [
   { id: 'achievements', label: 'Achievements', icon: <Award size={18} /> },
 ] as const;
 
-const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  science: <FlaskConical size={14} />, history: <Clock size={14} />,
-  technology: <Cpu size={14} />, mathematics: <Calculator size={14} />,
-  literature: <BookOpen size={14} />, geography: <Globe size={14} />,
-  logic: <Lightbulb size={14} />, crypto_web3: <Bitcoin size={14} />,
-};
-
 function abbrev(addr: string) {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-}
-
-function rankInfo(tier: string) {
-  return RANK_TIERS.find(r => r.id === tier) ?? RANK_TIERS[0];
 }
 
 const GAMEPLAY_SCREENS: AppScreen[] = ['category_select', 'challenge_start', 'playing', 'complete'];

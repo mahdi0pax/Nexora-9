@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Trophy, TrendingUp, TrendingDown, Minus, Crown,
-  Sword, Sparkles, Zap, ChevronRight, Users,
+  Sword, Sparkles, ChevronRight, Users,
 } from 'lucide-react';
-import { RANK_TIERS } from '../design-system/tokens';
-import { Player, getLeaderboard, getWeeklyLeaderboard, getBossLeaderboard } from '../lib/supabase';
+import { Player, getWeeklyLeaderboard, getBossLeaderboard } from '../lib/supabase';
+import { rankInfo } from '../lib/constants';
 
 type Tab = 'alltime' | 'weekly' | 'boss' | 'premium';
 
@@ -24,7 +24,7 @@ interface WeeklyEntry {
   weekly_correct: number;
 }
 
-function rankInfo(tier: string) { return RANK_TIERS.find(r => r.id === tier) ?? RANK_TIERS[0]; }
+// rankInfo imported from ../lib/constants
 
 const MOVEMENT: Record<string, React.ReactNode> = {
   up:   <TrendingUp size={12} style={{ color: '#33E8B8' }} />,
@@ -35,10 +35,9 @@ const MOVEMENT: Record<string, React.ReactNode> = {
 interface Props {
   walletAddress: string;
   allTimeLb: Player[];
-  onBack: () => void;
 }
 
-export default function LeaderboardPage({ walletAddress, allTimeLb, onBack }: Props) {
+export default function LeaderboardPage({ walletAddress, allTimeLb }: Props) {
   const [tab, setTab]       = useState<Tab>('alltime');
   const [weekly, setWeekly] = useState<WeeklyEntry[]>([]);
   const [bossLb, setBossLb] = useState<Player[]>([]);

@@ -1,29 +1,7 @@
 import { motion } from 'framer-motion';
-import { CheckCircle2, Lock, Trophy, Zap, Flame, Crown, Target, Globe,
-  Package, Shield, Sword, BarChart3, User } from 'lucide-react';
+import { CheckCircle2, Lock, Trophy } from 'lucide-react';
 import { Achievement } from '../lib/supabase';
-
-const ACHIEVEMENT_META: Record<string, { label: string; icon: React.ReactNode; color: string; desc: string; category: string }> = {
-  first_login:        { label: 'First Login',      icon: <User size={22} />,         color: '#33DEFF', desc: 'Connected your wallet for the first time.',            category: 'Milestone' },
-  first_correct:      { label: 'First Answer',     icon: <CheckCircle2 size={22} />, color: '#33E8B8', desc: 'Got your first correct answer.',                      category: 'Milestone' },
-  first_spin:         { label: 'First Spin',       icon: <Crown size={22} />,        color: '#FFD080', desc: 'Tried the Daily Spin for the first time.',             category: 'Milestone' },
-  streak_3:           { label: '3-Day Streak',     icon: <Flame size={22} />,        color: '#FFB84D', desc: 'Maintained a 3-day activity streak.',                  category: 'Streak' },
-  streak_7:           { label: '7-Day Streak',     icon: <Flame size={22} />,        color: '#FF7A50', desc: 'Maintained a 7-day activity streak.',                  category: 'Streak' },
-  level_5:            { label: 'Level 5',          icon: <Zap size={22} />,          color: '#9B81FF', desc: 'Reached Level 5 on Nexora.',                          category: 'Progress' },
-  level_10:           { label: 'Level 10',         icon: <Zap size={22} />,          color: '#7C5CFC', desc: 'Reached Level 10 on Nexora.',                         category: 'Progress' },
-  level_20:           { label: 'Level 20',         icon: <Crown size={22} />,        color: '#FFD080', desc: 'Reached Level 20 — true Nexora veteran.',             category: 'Progress' },
-  correct_10:         { label: '10 Correct',       icon: <Target size={22} />,       color: '#33DEFF', desc: 'Answered 10 questions correctly in total.',           category: 'Knowledge' },
-  correct_50:         { label: '50 Correct',       icon: <Target size={22} />,       color: '#00D4FF', desc: 'Answered 50 questions correctly in total.',           category: 'Knowledge' },
-  categories_3:       { label: '3 Categories',     icon: <Globe size={22} />,        color: '#33E8B8', desc: 'Played challenges in 3 different knowledge domains.', category: 'Knowledge' },
-  first_purchase:     { label: 'First Purchase',   icon: <Package size={22} />,      color: '#FFB84D', desc: 'Made your first item purchase from the shop.',        category: 'Economy' },
-  xp_boost_used:      { label: 'XP Boosted',       icon: <Zap size={22} />,          color: '#9B81FF', desc: 'Activated an XP Boost item.',                         category: 'Economy' },
-  streak_shield_used: { label: 'Shield Used',      icon: <Shield size={22} />,       color: '#33E8B8', desc: 'Used a Streak Shield to protect your streak.',        category: 'Economy' },
-  boss_participated:  { label: 'Boss Fighter',     icon: <Sword size={22} />,        color: '#B9F2FF', desc: 'Participated in a Boss Challenge.',                   category: 'Combat' },
-  rank_gold:          { label: 'Gold Rank',        icon: <Trophy size={22} />,       color: '#FFD080', desc: 'Reached Gold rank tier on the leaderboard.',          category: 'Rank' },
-  top10_weekly:       { label: 'Top 10 Weekly',    icon: <BarChart3 size={22} />,    color: '#9B81FF', desc: 'Appeared in the Top 10 Weekly Leaderboard.',          category: 'Rank' },
-};
-
-const CATEGORIES_ORDER = ['Milestone', 'Progress', 'Streak', 'Knowledge', 'Combat', 'Rank', 'Economy'];
+import { ACHIEVEMENT_META, ACHIEVEMENT_CATEGORIES } from '../lib/constants';
 
 interface Props {
   achievements: Achievement[];
@@ -91,7 +69,7 @@ export default function AchievementsPage({ achievements, onBack }: Props) {
       </motion.div>
 
       {/* Achievements by category */}
-      {CATEGORIES_ORDER.map((cat, catIdx) => {
+      {ACHIEVEMENT_CATEGORIES.map((cat, catIdx) => {
         const catItems    = Object.entries(ACHIEVEMENT_META).filter(([, meta]) => meta.category === cat);
         const catUnlocked = catItems.filter(([id]) => unlocked.has(id)).length;
 

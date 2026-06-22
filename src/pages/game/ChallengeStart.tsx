@@ -1,26 +1,9 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Clock, Star, Target, FlaskConical, Cpu, Calculator, BookOpen, Globe, Lightbulb, Bitcoin, Sword } from 'lucide-react';
+import { Zap, Clock, Star, Target, Sword } from 'lucide-react';
 import { CATEGORIES } from '../../design-system/tokens';
 import { Player } from '../../lib/supabase';
-
-const CAT_ICONS: Record<string, React.ReactNode> = {
-  science:     <FlaskConical size={36} />,
-  history:     <Clock size={36} />,
-  technology:  <Cpu size={36} />,
-  mathematics: <Calculator size={36} />,
-  literature:  <BookOpen size={36} />,
-  geography:   <Globe size={36} />,
-  logic:       <Lightbulb size={36} />,
-  crypto_web3: <Bitcoin size={36} />,
-};
-
-function levelToDifficulty(level: number) {
-  if (level <= 3) return 'Easy';
-  if (level <= 6) return 'Medium';
-  if (level <= 8) return 'Hard';
-  return 'Expert';
-}
+import { CategoryIcon, levelToDifficulty } from '../../lib/constants';
 
 interface Props {
   player: Player;
@@ -124,7 +107,7 @@ export default function ChallengeStart({ player, categoryId, isBoss, isDaily, to
                 boxShadow:   `0 0 40px ${cat.color}25`,
               }}
             >
-              {isBoss ? <Sword size={36} style={{ color: '#B9F2FF' }} /> : CAT_ICONS[categoryId]}
+              {isBoss ? <Sword size={36} style={{ color: '#B9F2FF' }} /> : <CategoryIcon id={categoryId} size={36} />}
             </motion.div>
 
             <div className="relative z-10 space-y-2">

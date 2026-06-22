@@ -53,7 +53,7 @@ interface Props {
   onDisconnect: () => void;
 }
 
-export default function SettingsPage({ player, walletAddress, onBack, onDisconnect }: Props) {
+export default function SettingsPage({ player, walletAddress, onDisconnect }: Props) {
   const [section, setSection] = useState<SettingsSection>('account');
 
   const [notifyAchievements, setNotifyAchievements] = useState(true);

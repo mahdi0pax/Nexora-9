@@ -1,14 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Zap, Flame, Trophy, Crown, Sparkles, Star, TrendingUp, Target,
+  Zap, Flame, Trophy, Crown, Sparkles, TrendingUp, Target,
   Calendar, ChevronRight, Sword, ShoppingBag, Shield, Lock, Award,
-  FlaskConical, Clock, Cpu, Calculator, BookOpen, Globe, Lightbulb,
-  Bitcoin, BarChart3, CheckCircle2, User,
+  BarChart3, CheckCircle2,
 } from 'lucide-react';
-import { CATEGORIES, RANK_TIERS } from '../design-system/tokens';
-import { Player, CategoryMastery, ChallengeSession, Achievement, InventoryItem } from '../lib/supabase';
+import { CATEGORIES } from '../design-system/tokens';
+import { Player, ChallengeSession, Achievement } from '../lib/supabase';
 import { GameState } from '../store/useGameStore';
+import { CategoryIcon, ACHIEVEMENT_META, rankInfo } from '../lib/constants';
 
 interface DashboardProps {
   state: GameState;
@@ -21,38 +21,8 @@ interface DashboardProps {
   onGoToSettings: () => void;
 }
 
-const CAT_ICONS: Record<string, React.ReactNode> = {
-  science:     <FlaskConical size={20} />,
-  history:     <Clock size={20} />,
-  technology:  <Cpu size={20} />,
-  mathematics: <Calculator size={20} />,
-  literature:  <BookOpen size={20} />,
-  geography:   <Globe size={20} />,
-  logic:       <Lightbulb size={20} />,
-  crypto_web3: <Bitcoin size={20} />,
-};
-
-const ACHIEVEMENT_META: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  first_login:        { label: 'First Login',    icon: <User size={16} />,         color: '#33DEFF' },
-  first_correct:      { label: 'First Answer',   icon: <CheckCircle2 size={16} />, color: '#33E8B8' },
-  first_spin:         { label: 'First Spin',     icon: <Star size={16} />,         color: '#FFB84D' },
-  streak_3:           { label: '3-Day Streak',   icon: <Flame size={16} />,        color: '#FF7A50' },
-  streak_7:           { label: '7-Day Streak',   icon: <Flame size={16} />,        color: '#FFB84D' },
-  level_5:            { label: 'Level 5',        icon: <Zap size={16} />,          color: '#9B81FF' },
-  level_10:           { label: 'Level 10',       icon: <Zap size={16} />,          color: '#7C5CFC' },
-  level_20:           { label: 'Level 20',       icon: <Crown size={16} />,        color: '#FFD080' },
-  correct_10:         { label: '10 Correct',     icon: <Star size={16} />,         color: '#33E8B8' },
-  correct_50:         { label: '50 Correct',     icon: <Award size={16} />,        color: '#B9F2FF' },
-  categories_3:       { label: '3 Categories',   icon: <Globe size={16} />,        color: '#8FCDDD' },
-  first_purchase:     { label: 'First Purchase', icon: <ShoppingBag size={16} />,  color: '#FFB84D' },
-  xp_boost_used:      { label: 'XP Boosted',     icon: <Zap size={16} />,          color: '#9B81FF' },
-  streak_shield_used: { label: 'Shield Used',    icon: <Shield size={16} />,       color: '#33E8B8' },
-  boss_participated:  { label: 'Boss Fighter',   icon: <Sword size={16} />,        color: '#B9F2FF' },
-  rank_gold:          { label: 'Gold Rank',      icon: <Trophy size={16} />,       color: '#FFD080' },
-  top10_weekly:       { label: 'Top 10 Weekly',  icon: <TrendingUp size={16} />,   color: '#9B81FF' },
-};
-
-function rankInfo(tier: string) { return RANK_TIERS.find(r => r.id === tier) ?? RANK_TIERS[0]; }
+// Icons from shared constants — use CATEGORY_ICONS[cat.id] for category icons
+// ACHIEVEMENT_META and rankInfo imported from ../lib/constants
 
 function XpBar({ pct }: { pct: number }) {
   const [d, setD] = useState(0);
@@ -75,7 +45,7 @@ function RankBadge({ tier, size = 'md' }: { tier: string; size?: 'sm' | 'md' }) 
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.45, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] } }),
+  visible: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.45, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] as const } }),
 };
 
 function Card({ children, index = 0, className = '' }: { children: React.ReactNode; index?: number; className?: string }) {
@@ -264,7 +234,7 @@ export default function Dashboard({ state, onStartChallenge, onGoToCategorySelec
                       className="w-10 h-10 rounded-xl flex items-center justify-center"
                       style={{ background: `${cat.color}15`, border: `1px solid ${cat.color}28`, color: cat.color }}
                     >
-                      {locked ? <Lock size={16} style={{ color: 'rgba(230,237,247,0.25)' }} /> : CAT_ICONS[cat.id]}
+                      {locked ? <Lock size={16} style={{ color: 'rgba(230,237,247,0.25)' }} /> : <CategoryIcon id={cat.id} size={20} />}
                     </div>
                     {locked ? (
                       <span className="text-2xs font-title font-bold px-2 py-1 rounded-md" style={{ background: 'rgba(230,237,247,0.06)', color: 'rgba(230,237,247,0.3)', border: '1px solid rgba(230,237,247,0.08)' }}>Lv {cat.unlockLevel}</span>
@@ -351,7 +321,7 @@ export default function Dashboard({ state, onStartChallenge, onGoToCategorySelec
                   className="w-10 h-10 rounded-xl flex items-center justify-center"
                   style={{ background: `${cat.color}15`, border: `1px solid ${cat.color}28`, color: cat.color }}
                 >
-                  {CAT_ICONS[cat.id]}
+                  <CategoryIcon id={cat.id} size={20} />
                 </div>
                 <div className="font-title font-semibold text-sm" style={{ color: '#E6EDF7' }}>{cat.label}</div>
                 <span
@@ -533,7 +503,7 @@ function RecentHistory({ sessions }: { sessions: ChallengeSession[] }) {
               style={{ borderBottom: i < Math.min(sessions.length, 6) - 1 ? '1px solid rgba(230,237,247,0.04)' : 'none' }}
             >
               <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${cat?.color ?? '#9B81FF'}15`, color: cat?.color ?? '#9B81FF' }}>
-                {CAT_ICONS[s.category_id] ?? <Zap size={14} />}
+                <CategoryIcon id={s.category_id} size={14} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-title font-semibold text-sm truncate" style={{ color: '#E6EDF7' }}>{cat?.label ?? s.category_id}</div>

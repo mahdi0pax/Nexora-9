@@ -42,7 +42,7 @@ function ProgressRing({ pct, size, color }: { pct: number; size: number; color: 
   );
 }
 
-export default function Playing({ player, categoryId, questions, currentQ, totalQ, selectedOption, answerState, sessionCorrect, sessionScore, pendingXp, isBoss, isDaily, onSubmit, onNext, onQuit }: Props) {
+export default function Playing({ player: _player, categoryId, questions, currentQ, totalQ, selectedOption, answerState, sessionCorrect, sessionScore, pendingXp, isBoss, isDaily, onSubmit, onNext, onQuit }: Props) {
   const cat      = CATEGORIES.find(c => c.id === categoryId);
   const question = questions[currentQ];
   const [showHint, setShowHint]   = useState(false);

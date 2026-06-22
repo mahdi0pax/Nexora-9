@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Zap, Target, CheckCircle2, XCircle, RotateCcw, LayoutDashboard, ChevronRight, Sword, Star, Flame } from 'lucide-react';
-import { CATEGORIES, RANK_TIERS } from '../../design-system/tokens';
+import { CATEGORIES } from '../../design-system/tokens';
 import { Player } from '../../lib/supabase';
+import { rankInfo } from '../../lib/constants';
 
 interface Props {
   player: Player;
@@ -17,7 +18,7 @@ interface Props {
   onDashboard: () => void;
 }
 
-function rankInfo(tier: string) { return RANK_TIERS.find(r => r.id === tier) ?? RANK_TIERS[0]; }
+// rankInfo imported from ../../lib/constants
 
 export default function ChallengeComplete({ player, categoryId, totalQ, sessionCorrect, sessionScore, isBoss, isDaily, prevRankTier, onPlayAgain, onDashboard }: Props) {
   const [visible, setVisible] = useState(false);

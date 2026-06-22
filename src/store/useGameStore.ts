@@ -373,7 +373,7 @@ export function useGameStore() {
     return prize;
   }, [set, refreshPlayer]);
 
-  const purchaseShopItem = useCallback(async (itemSlug: string, priceRitual: number) => {
+  const purchaseShopItem = useCallback(async (itemSlug: string, _priceRitual: number) => {
     const { walletAddress, player } = stateRef.current;
     if (!walletAddress || !player) return false;
     try {

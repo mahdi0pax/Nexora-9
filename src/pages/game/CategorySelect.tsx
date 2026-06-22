@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  FlaskConical, Clock, Cpu, Calculator, BookOpen, Globe,
-  Lightbulb, Bitcoin, Lock, ChevronRight, Zap, TrendingUp,
+  Lock, ChevronRight, Zap, TrendingUp,
 } from 'lucide-react';
 import { Player, CategoryMastery } from '../../lib/supabase';
 import { CATEGORIES } from '../../design-system/tokens';
+import { CategoryIcon, DIFFICULTY_LABELS } from '../../lib/constants';
 
 interface CategorySelectProps {
   player: Player;
@@ -13,19 +13,6 @@ interface CategorySelectProps {
   onSelect: (id: string) => void;
   onBack: () => void;
 }
-
-const CAT_ICONS: Record<string, React.ReactNode> = {
-  science:     <FlaskConical size={26} />,
-  history:     <Clock size={26} />,
-  technology:  <Cpu size={26} />,
-  mathematics: <Calculator size={26} />,
-  literature:  <BookOpen size={26} />,
-  geography:   <Globe size={26} />,
-  logic:       <Lightbulb size={26} />,
-  crypto_web3: <Bitcoin size={26} />,
-};
-
-const DIFFICULTY_LABELS = ['Beginner','Beginner','Easy','Easy','Medium','Medium','Hard','Hard','Expert','Expert','Elite'];
 
 export default function CategorySelect({ player, mastery, onSelect, onBack }: CategorySelectProps) {
   const [hovered, setHovered] = useState<string | null>(null);
@@ -116,7 +103,7 @@ export default function CategorySelect({ player, mastery, onSelect, onBack }: Ca
                     className="w-14 h-14 rounded-2xl flex items-center justify-center"
                     style={{ background: `${cat.color}15`, border: `1px solid ${cat.color}28`, color: locked ? 'rgba(230,237,247,0.25)' : cat.color }}
                   >
-                    {locked ? <Lock size={22} /> : CAT_ICONS[cat.id]}
+                    {locked ? <Lock size={22} /> : <CategoryIcon id={cat.id} size={26} />}
                   </motion.div>
                   {locked ? (
                     <span className="text-xs font-title font-bold px-2.5 py-1 rounded-full" style={{ background: 'rgba(230,237,247,0.06)', color: 'rgba(230,237,247,0.3)', border: '1px solid rgba(230,237,247,0.1)' }}>
@@ -134,7 +121,7 @@ export default function CategorySelect({ player, mastery, onSelect, onBack }: Ca
                     {cat.label}
                   </h3>
                   <p className="text-xs leading-relaxed" style={{ color: locked ? 'rgba(230,237,247,0.2)' : 'rgba(230,237,247,0.45)' }}>
-                    {locked ? `Unlocks at Level ${cat.unlockLevel}` : cat.desc}
+                    {locked ? `Unlocks at Level ${cat.unlockLevel}` : `${cat.label} questions`}
                   </p>
                 </div>
 

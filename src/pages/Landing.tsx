@@ -50,16 +50,16 @@ export default function Landing({ onConnectWallet }: LandingProps) {
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-toast animate-fade-in-up"
           style={{ minWidth: '320px' }}
         >
-          <div className="nx-toast nx-toast-accent px-5 py-4 rounded-2xl">
+          <div className="nx-toast nx-toast-violet px-5 py-4 rounded-2xl">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'rgba(160,70,104,0.2)', border: '1px solid rgba(160,70,104,0.3)' }}
+              style={{ background: 'rgba(124,92,252,0.2)', border: '1px solid rgba(124,92,252,0.3)' }}
             >
               <span className="text-base">🔗</span>
             </div>
             <div>
-              <div className="font-title font-semibold text-ink-100 text-sm">Wallet Integration Coming Soon</div>
-              <div className="text-xs text-ink/50 mt-0.5">
+              <div className="font-title font-semibold text-sm" style={{ color: '#E6EDF7' }}>Wallet Integration Coming Soon</div>
+              <div className="text-xs mt-0.5" style={{ color: 'rgba(230,237,247,0.5)' }}>
                 Full Web3 integration is being built. Stay tuned!
               </div>
             </div>

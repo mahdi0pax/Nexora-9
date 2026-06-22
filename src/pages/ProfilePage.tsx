@@ -1,42 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  User, Zap, Flame, Trophy, Crown, Target, BarChart3,
-  CheckCircle2, Sword, Shield, ChevronRight, FlaskConical, Clock,
-  Cpu, Calculator, BookOpen, Globe, Lightbulb, Bitcoin, Package,
+  Zap, Flame, Trophy, Crown, Target, BarChart3,
+  CheckCircle2, Sword, ChevronRight, Package,
 } from 'lucide-react';
-import { CATEGORIES, RANK_TIERS } from '../design-system/tokens';
+import { CATEGORIES } from '../design-system/tokens';
 import { Player, CategoryMastery, ChallengeSession, Achievement, InventoryItem } from '../lib/supabase';
+import { CategoryIcon, ACHIEVEMENT_META, rankInfo } from '../lib/constants';
 
 type ProfileTab = 'overview' | 'history' | 'inventory';
-
-const ACHIEVEMENT_META: Record<string, { label: string; icon: React.ReactNode; color: string; desc: string }> = {
-  first_login:        { label: 'First Login',      icon: <User size={18} />,         color: '#33DEFF', desc: 'Connected your wallet for the first time.' },
-  first_correct:      { label: 'First Answer',     icon: <CheckCircle2 size={18} />, color: '#33E8B8', desc: 'Got your first correct answer.' },
-  first_spin:         { label: 'First Spin',       icon: <Crown size={18} />,        color: '#FFD080', desc: 'Tried the Daily Spin.' },
-  streak_3:           { label: '3-Day Streak',     icon: <Flame size={18} />,        color: '#FFB84D', desc: 'Maintained a 3-day activity streak.' },
-  streak_7:           { label: '7-Day Streak',     icon: <Flame size={18} />,        color: '#FF7A50', desc: 'Maintained a 7-day activity streak.' },
-  level_5:            { label: 'Level 5',          icon: <Zap size={18} />,          color: '#9B81FF', desc: 'Reached Level 5 on Nexora.' },
-  level_10:           { label: 'Level 10',         icon: <Zap size={18} />,          color: '#7C5CFC', desc: 'Reached Level 10 on Nexora.' },
-  level_20:           { label: 'Level 20',         icon: <Crown size={18} />,        color: '#FFD080', desc: 'Reached Level 20 — true veteran.' },
-  correct_10:         { label: '10 Correct',       icon: <Target size={18} />,       color: '#33DEFF', desc: 'Answered 10 questions correctly.' },
-  correct_50:         { label: '50 Correct',       icon: <Target size={18} />,       color: '#00D4FF', desc: 'Answered 50 questions correctly.' },
-  categories_3:       { label: '3 Categories',     icon: <Globe size={18} />,        color: '#33E8B8', desc: 'Played challenges in 3 different domains.' },
-  first_purchase:     { label: 'First Purchase',   icon: <Package size={18} />,      color: '#FFB84D', desc: 'Made your first shop purchase.' },
-  xp_boost_used:      { label: 'XP Boosted',       icon: <Zap size={18} />,          color: '#9B81FF', desc: 'Activated an XP Boost item.' },
-  streak_shield_used: { label: 'Shield Used',      icon: <Shield size={18} />,       color: '#33E8B8', desc: 'Used a Streak Shield to protect your streak.' },
-  boss_participated:  { label: 'Boss Fighter',     icon: <Sword size={18} />,        color: '#B9F2FF', desc: 'Participated in a Boss Challenge.' },
-  rank_gold:          { label: 'Gold Rank',        icon: <Trophy size={18} />,       color: '#FFD080', desc: 'Reached Gold rank tier.' },
-  top10_weekly:       { label: 'Top 10 Weekly',    icon: <BarChart3 size={18} />,    color: '#9B81FF', desc: 'Appeared in the Top 10 Weekly Leaderboard.' },
-};
-
-const CAT_ICONS: Record<string, React.ReactNode> = {
-  science: <FlaskConical size={16} />, history: <Clock size={16} />, technology: <Cpu size={16} />,
-  mathematics: <Calculator size={16} />, literature: <BookOpen size={16} />, geography: <Globe size={16} />,
-  logic: <Lightbulb size={16} />, crypto_web3: <Bitcoin size={16} />,
-};
-
-function rankInfo(tier: string) { return RANK_TIERS.find(r => r.id === tier) ?? RANK_TIERS[0]; }
 
 interface Props {
   player:    Player;
@@ -45,7 +17,6 @@ interface Props {
   achievements: Achievement[];
   inventory: InventoryItem[];
   walletAddress: string;
-  onBack:    () => void;
   onGoToAchievements: () => void;
 }
 
@@ -54,7 +25,7 @@ const cardVariants = {
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.4, delay: i * 0.05 } }),
 };
 
-export default function ProfilePage({ player, mastery, sessions, achievements, inventory, walletAddress, onBack, onGoToAchievements }: Props) {
+export default function ProfilePage({ player, mastery, sessions, achievements, inventory, walletAddress, onGoToAchievements }: Props) {
   const [tab, setTab] = useState<ProfileTab>('overview');
   const rank          = rankInfo(player.rank_tier);
   const thresholds    = [0,150,400,750,1200,1800,2600,3500,4600,6000];
@@ -234,7 +205,7 @@ export default function ProfilePage({ player, mastery, sessions, achievements, i
                         className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                         style={{ background: `${cat.color}18`, border: `1px solid ${cat.color}28`, color: cat.color }}
                       >
-                        {CAT_ICONS[cat.id]}
+                        <CategoryIcon id={cat.id} size={16} />
                       </div>
                       <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-center justify-between">
@@ -357,7 +328,7 @@ export default function ProfilePage({ player, mastery, sessions, achievements, i
                     className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: `${cat?.color ?? '#9B81FF'}18`, color: cat?.color ?? '#9B81FF' }}
                   >
-                    {CAT_ICONS[s.category_id] ?? <Zap size={16} />}
+                    <CategoryIcon id={s.category_id} size={16} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">

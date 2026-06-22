@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { ShopItem, InventoryItem, getShopItems } from '../lib/supabase';
 import { Player } from '../lib/supabase';
+import { ShopCatIcon, getRarityStyle } from '../lib/constants';
 
 type ShopCategory = 'all' | 'boost' | 'protection' | 'utility' | 'access' | 'crate';
 
@@ -18,27 +19,12 @@ const CAT_TABS: { id: ShopCategory; label: string; icon: React.ReactNode }[] = [
   { id: 'crate',      label: 'Crates',     icon: <Gift size={13} /> },
 ];
 
-const RARITY_STYLES: Record<string, { color: string; label: string; bg: string; border: string }> = {
-  common:    { color: '#B0C4DE', label: 'Common',    bg: 'rgba(176,196,222,0.07)', border: 'rgba(176,196,222,0.15)' },
-  uncommon:  { color: '#33E8B8', label: 'Uncommon',  bg: 'rgba(0,200,150,0.08)',   border: 'rgba(0,200,150,0.25)' },
-  rare:      { color: '#33DEFF', label: 'Rare',      bg: 'rgba(0,212,255,0.08)',   border: 'rgba(0,212,255,0.25)' },
-  epic:      { color: '#9B81FF', label: 'Epic',      bg: 'rgba(124,92,252,0.1)',   border: 'rgba(124,92,252,0.3)' },
-  legendary: { color: '#FFD080', label: 'Legendary', bg: 'rgba(255,208,128,0.08)', border: 'rgba(255,208,128,0.25)' },
-};
-
-const CAT_ICONS: Record<string, React.ReactNode> = {
-  boost:      <Zap size={22} />,
-  protection: <Shield size={22} />,
-  utility:    <Star size={22} />,
-  access:     <Sword size={22} />,
-  crate:      <Gift size={22} />,
-};
+const rs = (item: ShopItem) => getRarityStyle(item.rarity);
 
 interface Props {
   player:    Player;
   inventory: InventoryItem[];
   onPurchase:(slug: string, price: number) => Promise<boolean>;
-  onBack:    () => void;
 }
 
 interface PurchaseModal {
@@ -52,7 +38,7 @@ const itemVariants = {
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.4, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] as const } }),
 };
 
-export default function ShopPage({ player, inventory, onPurchase, onBack }: Props) {
+export default function ShopPage({ player, inventory, onPurchase }: Props) {
   const [items, setItems]       = useState<ShopItem[]>([]);
   const [loading, setLoading]   = useState(true);
   const [cat, setCat]           = useState<ShopCategory>('all');
@@ -77,7 +63,7 @@ export default function ShopPage({ player, inventory, onPurchase, onBack }: Prop
     setModal(m => m ? { ...m, step: ok ? 'success' : 'error', errorMsg: ok ? undefined : 'Transaction failed. Please try again.' } : null);
   }
 
-  const rs = (item: ShopItem) => RARITY_STYLES[item.rarity] ?? RARITY_STYLES.common;
+  // rs defined at module level using getRarityStyle
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-7 pb-10">
@@ -184,7 +170,7 @@ export default function ShopPage({ player, inventory, onPurchase, onBack }: Prop
                     className="w-12 h-12 rounded-2xl flex items-center justify-center"
                     style={{ background: r.bg, border: `1px solid ${r.border}`, color: r.color }}
                   >
-                    {CAT_ICONS[item.category] ?? <ShoppingBag size={20} />}
+                    <ShopCatIcon id={item.category} size={22} />
                   </div>
                   <span
                     className="text-2xs font-title font-semibold px-2 py-0.5 rounded-full"
@@ -261,7 +247,7 @@ export default function ShopPage({ player, inventory, onPurchase, onBack }: Prop
                     className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: 'rgba(28,38,64,0.8)', border: '1px solid rgba(230,237,247,0.1)', color: 'rgba(230,237,247,0.5)' }}
                   >
-                    {item ? (CAT_ICONS[item.category] ?? <Package size={18} />) : <Package size={18} />}
+                    {item ? <ShopCatIcon id={item.category} size={18} /> : <Package size={18} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-title font-semibold text-sm truncate" style={{ color: '#E6EDF7' }}>
@@ -346,7 +332,7 @@ export default function ShopPage({ player, inventory, onPurchase, onBack }: Prop
                     className="w-14 h-14 rounded-2xl flex items-center justify-center"
                     style={{ background: rs(selected).bg, border: `1px solid ${rs(selected).border}`, color: rs(selected).color }}
                   >
-                    {CAT_ICONS[selected.category] ?? <ShoppingBag size={24} />}
+                    <ShopCatIcon id={selected.category} size={24} />
                   </div>
                   <div>
                     <span
@@ -427,7 +413,7 @@ export default function ShopPage({ player, inventory, onPurchase, onBack }: Prop
                       className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center"
                       style={{ background: rs(modal.item).bg, border: `1px solid ${rs(modal.item).border}`, color: rs(modal.item).color }}
                     >
-                      {CAT_ICONS[modal.item.category] ?? <ShoppingBag size={28} />}
+                      <ShopCatIcon id={modal.item.category} size={28} />
                     </div>
                     <div>
                       <div className="font-title font-bold text-lg" style={{ color: '#E6EDF7' }}>{modal.item.name}</div>
