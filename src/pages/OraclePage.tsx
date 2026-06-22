@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Brain, Send, Sparkles, Lightbulb } from 'lucide-react';
+import { Card, IconBox, Button } from '../design-system';
 
 interface Message {
   id: string;
@@ -26,7 +27,6 @@ export default function OraclePage() {
     setInput('');
     setLoading(true);
 
-    // Placeholder: simulate oracle response
     setTimeout(() => {
       const oracleMsg: Message = {
         id: (Date.now() + 1).toString(),
@@ -42,13 +42,11 @@ export default function OraclePage() {
     <div className="h-[calc(100vh-64px)] flex flex-col max-w-3xl mx-auto">
       {/* Header */}
       <div className="px-4 py-4 flex-shrink-0 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(124,92,252,0.1)' }}>
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(124,92,252,0.12)', border: '1px solid rgba(124,92,252,0.2)' }}>
-          <Brain size={18} style={{ color: '#9B81FF' }} />
-        </div>
+        <IconBox variant="violet" size="md"><Brain size={18} /></IconBox>
         <div>
-          <div className="font-title font-semibold text-sm" style={{ color: '#E6EDF7' }}>Nexora Oracle</div>
-          <div className="text-2xs flex items-center gap-1" style={{ color: '#33E8B8' }}>
-            <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#33E8B8' }} />
+          <div className="font-title font-semibold text-sm nx-text-primary">Nexora Oracle</div>
+          <div className="text-2xs flex items-center gap-1 nx-text-emerald">
+            <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#00C896' }} />
             Online
           </div>
         </div>
@@ -80,8 +78,8 @@ export default function OraclePage() {
         {loading && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
             <div className="rounded-2xl px-4 py-3 flex items-center gap-2" style={{ background: 'rgba(28,38,64,0.5)', border: '1px solid rgba(230,237,247,0.06)' }}>
-              <Sparkles size={14} className="animate-pulse" style={{ color: '#9B81FF' }} />
-              <span className="text-xs" style={{ color: 'rgba(230,237,247,0.4)' }}>The Oracle is thinking...</span>
+              <Sparkles size={14} className="animate-pulse nx-text-violet" />
+              <span className="text-xs nx-text-muted">The Oracle is thinking...</span>
             </div>
           </motion.div>
         )}
@@ -90,14 +88,13 @@ export default function OraclePage() {
       {/* Input */}
       <div className="px-4 py-3 flex-shrink-0" style={{ borderTop: '1px solid rgba(124,92,252,0.1)' }}>
         <div className="flex items-center gap-2 rounded-2xl px-4 py-2.5" style={{ background: 'rgba(28,38,64,0.7)', border: '1px solid rgba(230,237,247,0.08)' }}>
-          <Lightbulb size={16} style={{ color: 'rgba(230,237,247,0.25)' }} />
+          <Lightbulb size={16} className="nx-text-faint" />
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSend()}
             placeholder="Ask the Oracle anything..."
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-ink/20"
-            style={{ color: '#E6EDF7' }}
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-[rgba(230,237,247,0.15)] nx-text-primary"
           />
           <button
             onClick={handleSend}
@@ -105,7 +102,7 @@ export default function OraclePage() {
             className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
             style={{
               background: input.trim() ? 'rgba(124,92,252,0.2)' : 'transparent',
-              color: input.trim() ? '#9B81FF' : 'rgba(230,237,247,0.2)',
+              color: input.trim() ? '#7C5CFC' : 'rgba(230,237,247,0.2)',
             }}
           >
             <Send size={14} />

@@ -1033,3 +1033,176 @@ code   { font-family: var(--font-mono); font-size: 0.875em; color: var(--color-c
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   GLASSMORPHISM UTILITIES — v3
+═══════════════════════════════════════════════════════════════ */
+
+.nx-glass-card {
+  background: linear-gradient(145deg, rgba(28,38,64,0.85) 0%, rgba(20,27,45,0.92) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(230,237,247,0.07);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45), 0 1px 4px rgba(0,0,0,0.35), inset 0 1px 0 rgba(230,237,247,0.04);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.nx-glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(230,237,247,0.08), transparent);
+}
+.nx-glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 36px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(230,237,247,0.06);
+  border-color: rgba(230,237,247,0.11);
+}
+
+.nx-glass-violet {
+  background: linear-gradient(145deg, rgba(124,92,252,0.08) 0%, rgba(28,38,64,0.9) 55%, rgba(20,27,45,0.95) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(124,92,252,0.18);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45), 0 0 0 1px rgba(124,92,252,0.06), inset 0 1px 0 rgba(230,237,247,0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.nx-glass-violet::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(124,92,252,0.4), transparent);
+}
+.nx-glass-violet:hover {
+  border-color: rgba(124,92,252,0.3);
+  box-shadow: 0 8px 36px rgba(0,0,0,0.55), 0 0 20px rgba(124,92,252,0.15), inset 0 1px 0 rgba(230,237,247,0.06);
+  transform: translateY(-2px);
+}
+
+.nx-glass-cyan {
+  background: linear-gradient(145deg, rgba(0,212,255,0.06) 0%, rgba(28,38,64,0.9) 55%, rgba(20,27,45,0.95) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0,212,255,0.14);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(230,237,247,0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.nx-glass-cyan::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,212,255,0.35), transparent);
+}
+.nx-glass-cyan:hover {
+  border-color: rgba(0,212,255,0.26);
+  box-shadow: 0 8px 36px rgba(0,0,0,0.55), 0 0 20px rgba(0,212,255,0.12), inset 0 1px 0 rgba(230,237,247,0.06);
+  transform: translateY(-2px);
+}
+
+.nx-glass-amber {
+  background: linear-gradient(145deg, rgba(255,184,77,0.06) 0%, rgba(28,38,64,0.9) 55%, rgba(20,27,45,0.95) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,184,77,0.14);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(230,237,247,0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.nx-glass-amber::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,184,77,0.35), transparent);
+}
+.nx-glass-amber:hover {
+  border-color: rgba(255,184,77,0.26);
+  box-shadow: 0 8px 36px rgba(0,0,0,0.55), 0 0 20px rgba(255,184,77,0.12), inset 0 1px 0 rgba(230,237,247,0.06);
+  transform: translateY(-2px);
+}
+
+.nx-glass-emerald {
+  background: linear-gradient(145deg, rgba(0,200,150,0.06) 0%, rgba(28,38,64,0.9) 55%, rgba(20,27,45,0.95) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0,200,150,0.14);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(230,237,247,0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.nx-glass-emerald::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,200,150,0.35), transparent);
+}
+.nx-glass-emerald:hover {
+  border-color: rgba(0,200,150,0.26);
+  box-shadow: 0 8px 36px rgba(0,0,0,0.55), 0 0 20px rgba(0,200,150,0.12), inset 0 1px 0 rgba(230,237,247,0.06);
+  transform: translateY(-2px);
+}
+
+/* Surface glass panel (for sidebar, header) */
+.nx-glass-surface {
+  background: rgba(20,27,45,0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(230,237,247,0.08);
+}
+
+/* Glow text utilities v3 */
+.nx-glow-text-violet { text-shadow: 0 0 24px rgba(124,92,252,0.6); }
+.nx-glow-text-cyan   { text-shadow: 0 0 24px rgba(0,212,255,0.5); }
+.nx-glow-text-amber  { text-shadow: 0 0 24px rgba(255,184,77,0.6); }
+.nx-glow-text-emerald{ text-shadow: 0 0 24px rgba(0,200,150,0.5); }
+
+/* Smooth transition utility */
+.nx-transition { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+.nx-transition-fast { transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
+.nx-transition-slow { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* Interactive hover lift */
+.nx-hover-lift {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nx-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+}
+
+/* Consistent page container */
+.nx-page {
+  padding: 24px;
+  max-width: 896px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+@media (max-width: 640px) {
+  .nx-page { padding: 16px; }
+}
+
+/* Consistent text colors */
+.nx-text-primary   { color: #E6EDF7; }
+.nx-text-muted     { color: rgba(230,237,247,0.45); }
+.nx-text-faint     { color: rgba(230,237,247,0.25); }
+.nx-text-violet    { color: #7C5CFC; }
+.nx-text-cyan      { color: #00D4FF; }
+.nx-text-amber     { color: #FFB84D; }
+.nx-text-emerald   { color: #00C896; }
+.nx-text-error     { color: #FF5A5A; }

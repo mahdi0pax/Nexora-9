@@ -192,7 +192,7 @@ export default function AppShell({ player, walletAddress, currentScreen, childre
             {player.streak_days > 0 && (
               <div
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-title font-bold"
-                style={{ background: 'rgba(0,200,150,0.1)', border: '1px solid rgba(0,200,150,0.2)', color: '#33E8B8' }}
+                style={{ background: 'rgba(0,200,150,0.1)', border: '1px solid rgba(0,200,150,0.2)', color: '#00C896' }}
               >
                 <Flame size={12} />
                 {player.streak_days}
@@ -200,7 +200,7 @@ export default function AppShell({ player, walletAddress, currentScreen, childre
             )}
             <div
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-title font-bold"
-              style={{ background: 'rgba(124,92,252,0.1)', border: '1px solid rgba(124,92,252,0.2)', color: '#9B81FF' }}
+              style={{ background: 'rgba(124,92,252,0.1)', border: '1px solid rgba(124,92,252,0.2)', color: '#7C5CFC' }}
             >
               <Zap size={12} />
               Lv {player.level}

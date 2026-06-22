@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Swords, Shield, Zap, Clock, Trophy, ChevronRight } from 'lucide-react';
 import { Player } from '../lib/supabase';
+import { Card, IconBox } from '../design-system';
 
 interface Props {
   player: Player;
@@ -32,71 +33,52 @@ const BOSSES = [
     category: 'crypto_web3',
     difficulty: 'Elite',
     reward: '1000 RITUAL + Legendary Badge',
-    color: '#B9F2FF',
+    color: '#00D4FF',
     icon: <Swords size={28} />,
   },
 ];
 
 export default function BossChallengePage({ player, onStartBoss }: Props) {
   return (
-    <div className="p-4 md:p-6 max-w-4xl mx-auto pb-10">
+    <div className="nx-page">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="text-center mb-8"
       >
-        <div
-          className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-          style={{ background: 'rgba(185,242,255,0.1)', border: '1px solid rgba(185,242,255,0.25)' }}
-        >
-          <Swords size={28} style={{ color: '#B9F2FF' }} />
-        </div>
-        <h1 className="font-title font-bold text-2xl" style={{ color: '#E6EDF7' }}>Boss Challenge</h1>
-        <p className="text-sm mt-1" style={{ color: 'rgba(230,237,247,0.4)' }}>
+        <IconBox variant="cyan" size="lg" className="mx-auto mb-4"><Swords size={28} /></IconBox>
+        <h1 className="font-title font-bold text-2xl nx-text-primary">Boss Challenge</h1>
+        <p className="text-sm mt-1 nx-text-muted">
           Face elite opponents for massive rewards. Win streaks unlock legendary loot.
         </p>
       </motion.div>
 
       {/* Stats bar */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="grid grid-cols-3 gap-3 mb-8"
-      >
+      <div className="grid grid-cols-3 gap-3 mb-8">
         {[
-          { label: 'Boss Wins', value: player.boss_wins ?? 0, icon: <Trophy size={14} />, color: '#FFD080' },
-          { label: 'Best Streak', value: 0, icon: <Zap size={14} />, color: '#9B81FF' },
-          { label: 'Next In', value: '12h', icon: <Clock size={14} />, color: '#33E8B8' },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className="rounded-xl p-3 text-center"
-            style={{ background: 'rgba(28,38,64,0.5)', border: '1px solid rgba(230,237,247,0.06)' }}
-          >
+          { label: 'Boss Wins', value: player.boss_wins ?? 0, icon: <Trophy size={14} />, color: '#FFB84D' },
+          { label: 'Best Streak', value: 0, icon: <Zap size={14} />, color: '#7C5CFC' },
+          { label: 'Next In', value: '12h', icon: <Clock size={14} />, color: '#00C896' },
+        ].map((s, i) => (
+          <Card key={s.label} variant="surface" index={i} className="p-3 text-center">
             <div className="flex items-center justify-center gap-1.5 mb-1" style={{ color: s.color }}>
               {s.icon}
-              <span className="text-2xs font-title font-semibold uppercase" style={{ color: 'rgba(230,237,247,0.3)' }}>{s.label}</span>
             </div>
-            <div className="font-title font-bold text-lg" style={{ color: '#E6EDF7' }}>{s.value}</div>
-          </div>
+            <div className="font-title font-bold text-lg nx-text-primary">{s.value}</div>
+            <div className="text-2xs font-title font-semibold uppercase nx-text-faint">{s.label}</div>
+          </Card>
         ))}
-      </motion.div>
+      </div>
 
       {/* Boss cards */}
       <div className="space-y-4">
         {BOSSES.map((boss, i) => (
-          <motion.div
+          <Card
             key={boss.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 + i * 0.08 }}
-            className="rounded-2xl p-5 relative overflow-hidden group cursor-pointer"
-            style={{
-              background: 'linear-gradient(135deg, rgba(28,38,64,0.95) 0%, rgba(20,27,45,0.98) 100%)',
-              border: `1px solid ${boss.color}25`,
-            }}
+            variant="default"
+            index={i}
+            className="p-5 relative overflow-hidden group cursor-pointer"
             onClick={() => onStartBoss(boss.category)}
           >
             <div
@@ -112,7 +94,7 @@ export default function BossChallengePage({ player, onStartBoss }: Props) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-title font-bold text-base" style={{ color: '#E6EDF7' }}>{boss.name}</span>
+                  <span className="font-title font-bold text-base nx-text-primary">{boss.name}</span>
                   <span
                     className="text-2xs font-bold px-2 py-0.5 rounded-md"
                     style={{ background: `${boss.color}15`, color: boss.color }}
@@ -120,11 +102,11 @@ export default function BossChallengePage({ player, onStartBoss }: Props) {
                     {boss.difficulty}
                   </span>
                 </div>
-                <div className="text-xs mt-1" style={{ color: 'rgba(230,237,247,0.4)' }}>{boss.reward}</div>
+                <div className="text-xs mt-1 nx-text-muted">{boss.reward}</div>
               </div>
-              <ChevronRight size={18} style={{ color: 'rgba(230,237,247,0.25)' }} className="group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight size={18} className="nx-text-faint group-hover:translate-x-0.5 transition-transform" />
             </div>
-          </motion.div>
+          </Card>
         ))}
       </div>
     </div>
