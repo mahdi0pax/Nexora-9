@@ -45,6 +45,9 @@ export default function App() {
     goToLore,
     showToast,
     purchaseShopItem,
+    buyPremiumPass,
+    buyBossTicket,
+    activateInventoryItemById,
   } = useGameStore();
 
   const prevRankRef = useRef<string>(state.player?.rank_tier ?? 'bronze');
@@ -194,7 +197,12 @@ export default function App() {
           <ShopPage
             player={state.player!}
             inventory={state.inventory}
+            shopItems={state.shopItems}
+            pendingPayment={state.pendingPayment}
+            ritualConfig={state.ritualConfig}
+            transactions={state.transactions}
             onPurchase={purchaseShopItem}
+            onActivate={activateInventoryItemById}
           />
         );
 
@@ -227,12 +235,28 @@ export default function App() {
         return <DailySpinPage player={state.player!} />;
 
       case 'premium_league':
-        return <PremiumLeaguePage player={state.player!} />;
+        return (
+          <PremiumLeaguePage
+            player={state.player!}
+            premiumStatus={state.premiumStatus}
+            premiumLeaderboard={state.premiumLeaderboard}
+            ritualConfig={state.ritualConfig}
+            shopItems={state.shopItems}
+            pendingPayment={state.pendingPayment}
+            onPurchasePremium={buyPremiumPass}
+          />
+        );
 
       case 'boss_challenge':
         return (
           <BossChallengePage
             player={state.player!}
+            bossAccess={state.bossAccess}
+            ritualConfig={state.ritualConfig}
+            shopItems={state.shopItems}
+            pendingPayment={state.pendingPayment}
+            transactions={state.transactions}
+            onBuyBossTicket={buyBossTicket}
             onStartBoss={(catId) => startChallenge(catId, { isBoss: true })}
           />
         );

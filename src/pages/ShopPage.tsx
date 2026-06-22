@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBag, Zap, Shield, Sword, Star, Package,
   CheckCircle2, Clock, Gift, ChevronRight, Info, X,
 } from 'lucide-react';
-import { ShopItem, InventoryItem, getShopItems } from '../lib/supabase';
+import { ShopItem, InventoryItem } from '../lib/supabase';
 import { Player } from '../lib/supabase';
 import { ShopCatIcon, getRarityStyle } from '../lib/constants';
+import { transactionExplorerUrl, type RitualConfig, type RitualTransaction } from '../lib/ritual';
 
 type ShopCategory = 'all' | 'boost' | 'protection' | 'utility' | 'access' | 'crate';
 
@@ -24,7 +25,12 @@ const rs = (item: ShopItem) => getRarityStyle(item.rarity);
 interface Props {
   player:    Player;
   inventory: InventoryItem[];
+  shopItems: ShopItem[];
+  pendingPayment: boolean;
+  ritualConfig: RitualConfig | null;
+  transactions: RitualTransaction[];
   onPurchase:(slug: string, price: number) => Promise<boolean>;
+  onActivate: (inventoryItemId: string) => Promise<boolean>;
 }
 
 interface PurchaseModal {
@@ -38,16 +44,12 @@ const itemVariants = {
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.4, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] as const } }),
 };
 
-export default function ShopPage({ player, inventory, onPurchase }: Props) {
-  const [items, setItems]       = useState<ShopItem[]>([]);
-  const [loading, setLoading]   = useState(true);
+export default function ShopPage({ player, inventory, shopItems: items, ritualConfig, transactions, onPurchase, onActivate }: Props) {
   const [cat, setCat]           = useState<ShopCategory>('all');
   const [modal, setModal]       = useState<PurchaseModal | null>(null);
   const [selected, setSelected] = useState<ShopItem | null>(null);
-
-  useEffect(() => {
-    getShopItems().then(d => { setItems(d); setLoading(false); });
-  }, []);
+  const [activatingId, setActivatingId] = useState<string | null>(null);
+  const loading = false;
 
   const filtered = cat === 'all' ? items : items.filter(i => i.category === cat);
   const ownedMap = Object.fromEntries(inventory.map(i => [i.item_slug, i]));
@@ -60,8 +62,19 @@ export default function ShopPage({ player, inventory, onPurchase }: Props) {
     if (!modal) return;
     setModal(m => m ? { ...m, step: 'processing' } : null);
     const ok = await onPurchase(modal.item.slug, modal.item.price_ritual);
-    setModal(m => m ? { ...m, step: ok ? 'success' : 'error', errorMsg: ok ? undefined : 'Transaction failed. Please try again.' } : null);
+    setModal(m => m ? { ...m, step: ok ? 'success' : 'error', errorMsg: ok ? undefined : 'Ritual payment failed or was rejected in your wallet.' } : null);
   }
+
+  async function handleActivate(invId: string) {
+    setActivatingId(invId);
+    const ok = await onActivate(invId);
+    setActivatingId(null);
+    if (!ok) {
+      setModal(m => m ? { ...m, step: 'error', errorMsg: 'Activation failed.' } : { item: modal?.item ?? items[0], step: 'error', errorMsg: 'Activation failed.' });
+    }
+  }
+
+  const latestTx = transactions.find(t => t.payment_kind === 'shop_purchase' || t.payment_kind === 'premium_pass' || t.payment_kind === 'boss_ticket');
 
   // rs defined at module level using getRarityStyle
 
@@ -265,10 +278,12 @@ export default function ShopPage({ player, inventory, onPurchase }: Props) {
                   </div>
                   {!inv.is_active && !expired && (
                     <button
+                      disabled={activatingId === inv.id}
+                      onClick={() => handleActivate(inv.id)}
                       className="px-3 py-1 rounded-lg text-xs font-title font-semibold transition-colors"
                       style={{ background: 'rgba(124,92,252,0.12)', border: '1px solid rgba(124,92,252,0.25)', color: '#9B81FF' }}
                     >
-                      Use
+                      {activatingId === inv.id ? '...' : 'Use'}
                     </button>
                   )}
                 </div>
@@ -457,8 +472,8 @@ export default function ShopPage({ player, inventory, onPurchase }: Props) {
                     className="w-12 h-12 rounded-full border-2 mx-auto animate-spin"
                     style={{ borderColor: 'rgba(230,237,247,0.1)', borderTopColor: '#9B81FF' }}
                   />
-                  <div className="font-title font-semibold" style={{ color: '#E6EDF7' }}>Processing...</div>
-                  <div className="text-sm" style={{ color: 'rgba(230,237,247,0.4)' }}>Signing testnet transaction</div>
+                  <div className="font-title font-semibold" style={{ color: '#E6EDF7' }}>Sign in your wallet...</div>
+                  <div className="text-sm" style={{ color: 'rgba(230,237,247,0.4)' }}>Approve the Ritual testnet transfer</div>
                 </div>
               )}
 
@@ -477,6 +492,15 @@ export default function ShopPage({ player, inventory, onPurchase }: Props) {
                     <div className="font-title font-bold text-lg" style={{ color: '#E6EDF7' }}>Purchase Complete!</div>
                     <div className="text-sm" style={{ color: 'rgba(230,237,247,0.4)' }}>{modal.item.name} added to your inventory.</div>
                   </div>
+                  {latestTx && (
+                    <div className="text-2xs px-3 py-2 rounded-lg" style={{ background: 'rgba(11,16,32,0.6)', border: '1px solid rgba(230,237,247,0.07)' }}>
+                      <div style={{ color: 'rgba(230,237,247,0.35)' }}>Transaction hash</div>
+                      <div className="font-mono truncate mt-0.5" style={{ color: '#33E8B8' }}>{latestTx.transaction_hash.slice(0, 22)}...{latestTx.transaction_hash.slice(-8)}</div>
+                      {transactionExplorerUrl(ritualConfig, latestTx.transaction_hash) && (
+                        <a href={transactionExplorerUrl(ritualConfig, latestTx.transaction_hash)!} target="_blank" rel="noopener noreferrer" className="text-xs mt-1 inline-block" style={{ color: '#9B81FF' }}>View on explorer →</a>
+                      )}
+                    </div>
+                  )}
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}

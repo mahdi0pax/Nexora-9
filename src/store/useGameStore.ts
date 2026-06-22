@@ -4,9 +4,15 @@ import {
   getOrCreatePlayer, updatePlayer, getCategoryMastery, getRecentSessions,
   getPlayerAchievements, checkDailyCompleted, getLeaderboard, getInventory,
   calculateRankScore, rankTierForScore, levelForXp, xpInCurrentLevel,
-  XP_BY_DIFFICULTY, recordSpin,
+  XP_BY_DIFFICULTY, recordSpin, getShopItems,
 } from '../lib/supabase';
 import { CATEGORIES } from '../design-system/tokens';
+import {
+  getRitualConfig, getPremiumStatus, getBossAccess, getPlayerTransactions,
+  purchaseShopItemWithRitual, purchaseBossTicketWithRitual, purchasePremiumPassWithRitual, activateInventoryItem,
+  getPremiumLeaderboard, grantBossAccessByEligibility,
+  type RitualTransaction, type PremiumStatus, type BossAccessStatus, type RitualConfig,
+} from '../lib/ritual';
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -68,8 +74,14 @@ export interface GameState {
   xpGained:       number;
   pendingXp:      number;
 
+  premiumStatus:  PremiumStatus | null;
+  bossAccess:      BossAccessStatus | null;
+  ritualConfig:    RitualConfig | null;
+  transactions:    RitualTransaction[];
+  premiumLeaderboard: { wallet_address: string; username: string; rank_tier: string; rank_score: number; total_xp: number; level: number }[];
   loading:        boolean;
   loadingQuestion:boolean;
+  pendingPayment:    boolean;
   error:          string | null;
   toast:          { message: string; type: 'success' | 'error' | 'info' } | null;
 }
@@ -101,8 +113,14 @@ const initialState: GameState = {
   answerState:    'idle',
   xpGained:       0,
   pendingXp:      0,
+  premiumStatus:  null,
+  bossAccess:      null,
+  ritualConfig:    null,
+  transactions:    [],
+  premiumLeaderboard: [],
   loading:        false,
   loadingQuestion:false,
+  pendingPayment:    false,
   error:          null,
   toast:          null,
 };
@@ -227,13 +245,19 @@ export function useGameStore() {
     set({ loading: true, error: null });
     try {
       const player = await getOrCreatePlayer(addr);
-      const [mastery, sessions, achievs, dailyDone, lb, inventory] = await Promise.all([
+      const [mastery, sessions, achievs, dailyDone, lb, inventory, premium, boss, config, txs, premiumLb, shopItems] = await Promise.all([
         getCategoryMastery(addr),
         getRecentSessions(addr, 15),
         getPlayerAchievements(addr),
         checkDailyCompleted(addr),
         getLeaderboard(25),
         getInventory(addr),
+        getPremiumStatus(addr),
+        getBossAccess(addr),
+        getRitualConfig(),
+        getPlayerTransactions(addr, 50),
+        getPremiumLeaderboard(25),
+        getShopItems(),
       ]);
       set({
         walletAddress:  addr,
@@ -244,6 +268,12 @@ export function useGameStore() {
         dailyDone,
         leaderboard:    lb,
         inventory,
+        premiumStatus:  premium,
+        bossAccess:     boss,
+        ritualConfig:   config,
+        transactions:   txs,
+        premiumLeaderboard: premiumLb as GameState['premiumLeaderboard'],
+        shopItems,
         screen:         'dashboard',
         loading:        false,
       });
@@ -257,15 +287,20 @@ export function useGameStore() {
     if (!walletAddress) return;
     try {
       const player = await getOrCreatePlayer(walletAddress);
-      const [mastery, sessions, achievs, dailyDone, lb, inventory] = await Promise.all([
+      const [mastery, sessions, achievs, dailyDone, lb, inventory, premium, boss, config, txs, premiumLb] = await Promise.all([
         getCategoryMastery(walletAddress),
         getRecentSessions(walletAddress, 15),
         getPlayerAchievements(walletAddress),
         checkDailyCompleted(walletAddress),
         getLeaderboard(25),
         getInventory(walletAddress),
+        getPremiumStatus(walletAddress),
+        getBossAccess(walletAddress),
+        getRitualConfig(),
+        getPlayerTransactions(walletAddress, 50),
+        getPremiumLeaderboard(25),
       ]);
-      set({ player, mastery: mastery as CategoryMastery[], recentSessions: sessions, achievements: achievs, dailyDone, leaderboard: lb, inventory });
+      set({ player, mastery: mastery as CategoryMastery[], recentSessions: sessions, achievements: achievs, dailyDone, leaderboard: lb, inventory, premiumStatus: premium, bossAccess: boss, ritualConfig: config, transactions: txs, premiumLeaderboard: premiumLb as GameState['premiumLeaderboard'] });
     } catch { /* silent */ }
   }, [set]);
 
@@ -308,7 +343,14 @@ export function useGameStore() {
     const question = s.questions[s.currentQ];
     if (!question) return;
     const isCorrect = optionIndex === question.correct;
-    const xp        = isCorrect ? XP_BY_DIFFICULTY[question.difficulty] ?? 100 : 0;
+    let baseXp      = isCorrect ? XP_BY_DIFFICULTY[question.difficulty] ?? 100 : 0;
+    // Apply active inventory boosts (xp_multiplier, reward_multiplier) and premium XP bonus
+    const now       = Date.now();
+    const activeXpBoost = s.inventory.find(i => i.is_active && (i.item_slug === 'xp_boost_1h' || i.item_slug === 'xp_boost_6h' || i.item_slug === 'xp_boost_24h') && (!i.expires_at || new Date(i.expires_at).getTime() > now));
+    const activeRewardBoost = s.inventory.find(i => i.is_active && (i.item_slug === 'double_reward_1h' || i.item_slug === 'double_reward_24h') && (!i.expires_at || new Date(i.expires_at).getTime() > now));
+    if (activeXpBoost || activeRewardBoost) baseXp *= 2;
+    if (s.isBoss) baseXp *= 3; // Boss challenges already triple XP
+    const xp        = baseXp;
     const timeTaken = s.startTime ? Date.now() - s.startTime : 0;
     set({ selectedOption: optionIndex, answerState: 'selected' });
     await sleep(350);
@@ -387,25 +429,95 @@ export function useGameStore() {
     return prize;
   }, [set, refreshPlayer]);
 
-  const purchaseShopItem = useCallback(async (itemSlug: string, _priceRitual: number) => {
+  const purchaseShopItem = useCallback(async (itemSlug: string, priceRitual: number) => {
     const { walletAddress, player } = stateRef.current;
     if (!walletAddress || !player) return false;
+    set({ pendingPayment: true, error: null });
     try {
-      const { data, error } = await supabase
-        .from('inventory_items')
-        .insert({ wallet_address: walletAddress, item_slug: itemSlug, quantity: 1, transaction_hash: `testnet_${Date.now()}` })
-        .select('*')
-        .single();
-      if (error) throw error;
-      set(prev => ({ inventory: [data as InventoryItem, ...prev.inventory] }));
-      // Check first_purchase achievement
+      const shopItem = stateRef.current.shopItems.find(i => i.slug === itemSlug);
+      if (!shopItem) throw new Error('Item not found in shop catalogue');
+      const outcome = await purchaseShopItemWithRitual(walletAddress, {
+        slug: shopItem.slug,
+        price_ritual: priceRitual,
+        effect_type: shopItem.effect_type,
+        duration_hours: shopItem.duration_hours,
+        effect_value: shopItem.effect_value,
+      });
+      if (!outcome.success) throw new Error(outcome.error || 'Ritual payment failed');
+      await refreshPlayer();
+      // first_purchase achievement
       const existingIds = stateRef.current.achievements.map(a => a.achievement_id);
       if (!existingIds.includes('first_purchase')) {
         await supabase.from('achievements').upsert([{ wallet_address: walletAddress, achievement_id: 'first_purchase' }], { onConflict: 'wallet_address,achievement_id' });
         await refreshPlayer();
       }
+      set({ pendingPayment: false });
       return true;
-    } catch { return false; }
+    } catch (e) {
+      set({ pendingPayment: false, error: e instanceof Error ? e.message : String(e) });
+      return false;
+    }
+  }, [set, refreshPlayer]);
+
+  const buyPremiumPass = useCallback(async (amount: number, durationDays: number) => {
+    const { walletAddress } = stateRef.current;
+    if (!walletAddress) return false;
+    set({ pendingPayment: true, error: null });
+    const outcome = await purchasePremiumPassWithRitual(walletAddress, amount, durationDays);
+    set({ pendingPayment: false });
+    if (!outcome.success) {
+      set({ error: outcome.error || 'Premium activation failed' });
+      return false;
+    }
+    await refreshPlayer();
+    return true;
+  }, [set, refreshPlayer]);
+
+
+  const buyBossTicket = useCallback(async () => {
+    const { walletAddress } = stateRef.current;
+    if (!walletAddress) return false;
+    set({ pendingPayment: true, error: null });
+    const shopItem = stateRef.current.shopItems.find(i => i.slug === 'boss_ticket');
+    const amount = shopItem?.price_ritual ?? 0.2;
+    const outcome = await purchaseBossTicketWithRitual(walletAddress, amount);
+    set({ pendingPayment: false });
+    if (!outcome.success) {
+      set({ error: outcome.error || 'Boss ticket purchase failed' });
+      return false;
+    }
+    await refreshPlayer();
+    return true;
+  }, [set, refreshPlayer]);
+
+  const activateInventoryItemById = useCallback(async (inventoryItemId: string) => {
+    const { walletAddress, inventory, shopItems } = stateRef.current;
+    if (!walletAddress) return false;
+    const inv = inventory.find(i => i.id === inventoryItemId);
+    if (!inv) return false;
+    const shopItem = shopItems.find(s => s.slug === inv.item_slug);
+    if (!shopItem) return false;
+    try {
+      await activateInventoryItem(walletAddress, inventoryItemId, {
+        effect_type: shopItem.effect_type,
+        effect_value: shopItem.effect_value,
+        duration_hours: shopItem.duration_hours,
+        slug: shopItem.slug,
+        item_slug: inv.item_slug,
+      });
+      await refreshPlayer();
+      return true;
+    } catch {
+      return false;
+    }
+  }, [set, refreshPlayer]);
+
+  const grantBossAccessEligibility = useCallback(async () => {
+    const { walletAddress, player } = stateRef.current;
+    if (!walletAddress || !player) return false;
+    await grantBossAccessByEligibility(walletAddress);
+    await refreshPlayer();
+    return true;
   }, [set, refreshPlayer]);
 
   return {
@@ -433,6 +545,10 @@ export function useGameStore() {
     showToast,
     handleSpin,
     purchaseShopItem,
+    buyPremiumPass,
+    buyBossTicket,
+    activateInventoryItemById,
+    grantBossAccessEligibility,
     set,
   };
 }
@@ -465,9 +581,13 @@ async function finalizeSession(s: GameState, set: (p: Partial<GameState> | ((pre
   if (!s.walletAddress || !s.player || !s.sessionId) return;
   const duration = s.startTime ? Math.floor((Date.now() - s.startTime) / 1000) : 0;
 
-  await supabase.from('challenge_sessions').update({ score: s.sessionScore, correct_count: s.sessionCorrect, duration_seconds: duration }).eq('id', s.sessionId);
+  // Apply premium XP bonus (+25%) on every session while premium is active
+  let sessionScore = s.sessionScore;
+  if (s.premiumStatus?.active) sessionScore = Math.round(sessionScore * 1.25);
 
-  const newTotalXp      = s.player.total_xp + s.sessionScore;
+  await supabase.from('challenge_sessions').update({ score: sessionScore, correct_count: s.sessionCorrect, duration_seconds: duration }).eq('id', s.sessionId);
+
+  const newTotalXp      = s.player.total_xp + sessionScore;
   const newTotalAnswered = s.player.total_answered + s.questions.length;
   const newTotalCorrect  = s.player.total_correct + s.sessionCorrect;
   const newAccuracy      = newTotalAnswered > 0 ? newTotalCorrect / newTotalAnswered : 0;
@@ -477,13 +597,32 @@ async function finalizeSession(s: GameState, set: (p: Partial<GameState> | ((pre
   const newRankScore     = calculateRankScore({ total_xp: newTotalXp, accuracy_rate: newAccuracy, total_correct: newTotalCorrect, streak_days: s.player.streak_days, boss_wins: bossWins });
   const newRankTier      = rankTierForScore(newRankScore);
 
+  // Credit Ritual testnet balance from session score (1 RITUAL per 1000 XP earned)
+  const ritualEarned = Math.floor(sessionScore / 1000 * 100) / 100;
+  const newRitualBal = (s.player.ritual_balance ?? 0) + ritualEarned;
+
   const today     = new Date().toISOString().slice(0, 10);
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
   const lastDay   = s.player.last_activity_date;
   let newStreak   = s.player.streak_days;
   if (lastDay !== today) newStreak = lastDay === yesterday ? s.player.streak_days + 1 : 1;
 
-  await updatePlayer(s.walletAddress, { total_xp: newTotalXp, current_xp: newCurrentXp, level: newLevel, rank_score: newRankScore, rank_tier: newRankTier, accuracy_rate: newAccuracy, total_correct: newTotalCorrect, total_answered: newTotalAnswered, streak_days: newStreak, last_activity_date: today, boss_wins: bossWins });
+  await updatePlayer(s.walletAddress, { total_xp: newTotalXp, current_xp: newCurrentXp, level: newLevel, rank_score: newRankScore, rank_tier: newRankTier, accuracy_rate: newAccuracy, total_correct: newTotalCorrect, total_answered: newTotalAnswered, streak_days: newStreak, last_activity_date: today, boss_wins: bossWins, ritual_balance: newRitualBal });
+
+  if (ritualEarned > 0) {
+    await supabase.from('ritual_transactions').insert({
+      wallet_address:    s.walletAddress.toLowerCase(),
+      recipient_address: s.walletAddress.toLowerCase(),
+      ritual_contract:   s.ritualConfig?.ritual_contract ?? null,
+      chain_id:           s.ritualConfig?.chain_id ?? null,
+      transaction_hash:  `reward_${s.sessionId!.slice(0, 18)}`,
+      amount_ritual:      ritualEarned,
+      payment_kind:       'reward_payout',
+      status:             'confirmed',
+      memo:               `Gameplay reward (${s.categoryId ?? 'session'})`,
+      confirmed_at:       new Date().toISOString(),
+    }).select().then(() => {}, () => {});
+  }
 
   if (s.categoryId) {
     const existing = s.mastery.find(m => m.category_id === s.categoryId);
