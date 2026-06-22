@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { askGeminiJson, PROMPTS, validateQuestions } from "../_shared/ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,100 +45,25 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const difficulty     = levelToDifficulty(level);
-    const categoryLabel  = CATEGORY_LABELS[categoryId];
-    const safeCount      = Math.min(10, Math.max(1, Number(count)));
-    const openaiKey      = Deno.env.get("OPENAI_API_KEY");
+    const difficulty = levelToDifficulty(level);
+    const categoryLabel = CATEGORY_LABELS[categoryId];
+    const safeCount = Math.min(10, Math.max(1, Number(count)));
 
-    if (!openaiKey) {
+    const prompt = PROMPTS.questionGen(categoryLabel, difficulty, safeCount);
+    const data = await askGeminiJson<{ questions: Array<Record<string, unknown>> }>(
+      prompt.system,
+      prompt.user,
+      { temperature: 0.8, maxTokens: 2500 }
+    );
+
+    if (!data || !data.questions || data.questions.length === 0) {
       return new Response(
         JSON.stringify({ questions: [], fallback: true }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const systemPrompt = `You are an expert quiz question writer for Nexora, a competitive knowledge platform.
-Generate exactly ${safeCount} multiple-choice questions in the category: ${categoryLabel}.
-Difficulty level: ${difficulty}.
-
-Rules:
-- Each question must have exactly 4 answer options (A, B, C, D).
-- Exactly one option must be correct.
-- Wrong answers must be plausible, not obviously silly.
-- For "easy": straightforward factual questions.
-- For "medium": require deeper knowledge or reasoning.
-- For "hard": specialist knowledge, nuance, or multi-step reasoning.
-- For "very_hard": expert-level, edge cases, surprising facts.
-- Vary question style: factual, conceptual, applied, comparative.
-- Never repeat questions across the set.
-- Provide a concise 1–2 sentence explanation for the correct answer.
-
-Respond ONLY with valid JSON in this exact format:
-{
-  "questions": [
-    {
-      "text": "Question text here?",
-      "options": ["Option A", "Option B", "Option C", "Option D"],
-      "correct": 0,
-      "explanation": "Short explanation of why this is correct.",
-      "difficulty": "${difficulty}"
-    }
-  ]
-}
-The "correct" field is the 0-based index of the correct option in the options array.`;
-
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${openaiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Generate ${safeCount} ${difficulty} questions for: ${categoryLabel}` },
-        ],
-        temperature: 0.8,
-        max_tokens: 2000,
-        response_format: { type: "json_object" },
-      }),
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("OpenAI error:", errText);
-      return new Response(
-        JSON.stringify({ questions: [], fallback: true }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    const aiData  = await response.json();
-    const content = aiData.choices?.[0]?.message?.content;
-    if (!content) {
-      return new Response(
-        JSON.stringify({ questions: [], fallback: true }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    const parsed    = JSON.parse(content);
-    const questions = parsed.questions ?? [];
-
-    const valid = questions.filter((q: unknown) => {
-      if (typeof q !== "object" || q === null) return false;
-      const question = q as Record<string, unknown>;
-      return (
-        typeof question.text === "string" &&
-        Array.isArray(question.options) &&
-        question.options.length === 4 &&
-        typeof question.correct === "number" &&
-        question.correct >= 0 &&
-        question.correct <= 3 &&
-        typeof question.explanation === "string"
-      );
-    });
+    const valid = validateQuestions(data.questions);
 
     return new Response(
       JSON.stringify({ questions: valid }),

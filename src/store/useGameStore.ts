@@ -6,6 +6,7 @@ import {
   calculateRankScore, rankTierForScore, levelForXp, xpInCurrentLevel,
   XP_BY_DIFFICULTY, recordSpin,
 } from '../lib/supabase';
+import { generateQuestions } from '../lib/ai';
 import { CATEGORIES } from '../design-system/tokens';
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -558,18 +559,10 @@ function sleep(ms: number) {
 }
 
 async function loadQuestions(categoryId: string, level: number, count: number): Promise<Question[]> {
-  const supabaseUrl  = import.meta.env.VITE_SUPABASE_URL as string;
-  const supabaseAnon = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
   try {
-    const res = await fetch(`${supabaseUrl}/functions/v1/generate-question`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${supabaseAnon}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ categoryId, level, count }),
-    });
-    if (!res.ok) throw new Error(`${res.status}`);
-    const data = await res.json();
-    if (!Array.isArray(data.questions) || data.questions.length === 0) throw new Error('empty');
-    return data.questions as Question[];
+    const questions = await generateQuestions(categoryId, level, count);
+    if (!questions || questions.length === 0) throw new Error('empty');
+    return questions;
   } catch {
     return getFallbackQuestions(categoryId, count);
   }
